@@ -26,5 +26,5 @@ export function handleResponse<T extends {}>(
 		| { data: undefined; error: unknown },
 ): T {
 	if (val.data !== undefined) return val.data;
-	throw val.error;
+	throw new Error(`${val.error}`);
 }

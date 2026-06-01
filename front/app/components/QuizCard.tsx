@@ -1,15 +1,30 @@
 import type { Route } from "./+types/quiz-card";
-import { Box, Typography, RadioGroup, FormControlLabel, Radio, Button, Card, CardContent } from "@mui/material";
+import {
+	Box,
+	Typography,
+	RadioGroup,
+	FormControlLabel,
+	Radio,
+	Button,
+	Card,
+	CardContent,
+} from "@mui/material";
 
 export interface QuizCardProps {
 	question: string;
 	options: string[];
 	selectedOption: number | null;
 	onOptionSelect: (index: number) => void;
-	onSubmit: () => void;
+	onSubmit?: () => void;
 }
 
-export default function QuizCard({ question, options, selectedOption, onOptionSelect, onSubmit }: QuizCardProps) {
+export default function QuizCard({
+	question,
+	options,
+	selectedOption,
+	onOptionSelect,
+	onSubmit,
+}: QuizCardProps) {
 	return (
 		<Card variant="outlined" sx={{ maxWidth: 600, mx: "auto", mt: 4 }}>
 			<CardContent sx={{ p: 4 }}>
@@ -17,7 +32,10 @@ export default function QuizCard({ question, options, selectedOption, onOptionSe
 					{question}
 				</Typography>
 				<Box sx={{ mb: 4 }}>
-					<RadioGroup value={selectedOption} onChange={(e) => onOptionSelect(parseInt(e.target.value))}>
+					<RadioGroup
+						value={selectedOption}
+						onChange={(e) => onOptionSelect(parseInt(e.target.value))}
+					>
 						{options.map((option, index) => (
 							<FormControlLabel
 								key={index}

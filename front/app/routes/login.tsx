@@ -1,37 +1,55 @@
-import type { Route } from "./+types/login";
 import {
 	Box,
 	Button,
-	TextField,
-	Typography,
 	Container,
 	Link,
+	TextField,
+	Typography,
 } from "@mui/material";
-import { useNavigate } from "react-router";
 import { useState } from "react";
+import { redirect } from "react-router";
 import { authLoginCreate, userCreate } from "~/client";
+import Session from "~/session.server";
 import { handleResponse } from "~/utils";
+import type { Route } from "./+types/login";
+
+export async function action({ request }: Route.ActionArgs) {
+	{
+		const session = await Session.fromRequest(request);
+
+		const data: any = Object.fromEntries(await request.formData());
+		const isSignUp = data.first_name !== undefined;
+
+		if (isSignUp) {
+			// create account if signing up
+			handleResponse(await userCreate({ body: data }));
+		}
+
+		// Do login
+		const jwt = handleResponse(
+			await authLoginCreate({
+				body: {
+					email: data.email,
+					password: data.password,
+				},
+			}),
+		);
+		session.setTokens(jwt);
+
+		// go to /onboarding if progress is undefined/null
+		const route = !jwt.user.progress ? "/onboarding" : "/";
+		throw redirect(route, await session.commit());
+	}
+}
+export async function loader({ request }: Route.LoaderArgs) {
+	const ses = await Session.fromRequest(request);
+	await ses.delete();
+}
 
 export default function Login({}: Route.ComponentProps) {
-	const navigate = useNavigate();
 	const [isSignUp, setIsSignUp] = useState(false);
 
-	const handleAuth = async (e: React.SubmitEvent) => {
-		e.preventDefault();
-		const data: any = Object.fromEntries(new FormData(e.target));
-		if (isSignUp) {
-			await userCreate({ body: data });
-			await navigate("/onboarding");
-		} else {
-			const user = handleResponse(await authLoginCreate({ body: data })).user;
-			console.log(user);
-			if (!user.progress) {
-				await navigate("/onboarding");
-			} else {
-				await navigate("/");
-			}
-		}
-	};
+	const handleAuth = async (e: React.SubmitEvent) => {};
 
 	return (
 		<Container maxWidth="xs">
@@ -49,6 +67,7 @@ export default function Login({}: Route.ComponentProps) {
 				</Typography>
 				<Box
 					component="form"
+					method="POST"
 					onSubmit={handleAuth}
 					sx={{
 						display: "flex",

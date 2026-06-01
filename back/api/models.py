@@ -58,10 +58,6 @@ class User(AbstractUser, Model):
             self.set_password(self.password)
         super().save(**kw)
 
-    @classmethod
-    def get_by_email(cls, email: str) -> Self:
-        return cls.objects.get(pk=email)
-
 
 class UserProgress(Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="progress")

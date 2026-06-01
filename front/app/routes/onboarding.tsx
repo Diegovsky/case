@@ -10,12 +10,20 @@ import {
 	CardContent,
 	LinearProgress,
 } from "@mui/material";
-import { useNavigate } from "react-router";
+import {
+	Form,
+	redirect,
+	useFormAction,
+	useNavigate,
+	useSubmit,
+} from "react-router";
 import { useState } from "react";
 import QuizCard from "~/components/QuizCard";
 import { DIAGNOSTIC_QUESTIONS } from "~/data/diagnostic-questions";
 import { userMePartialUpdate } from "~/client";
 import { handleResponse } from "~/utils";
+import Session from "~/session.server";
+import { setupClient } from "~/auth";
 
 const INTERESTS = [
 	"Sports",
@@ -32,11 +40,32 @@ const INTERESTS = [
 
 type OnboardingStep = "INTERESTS" | "DIAGNOSTIC";
 
-export default function Onboarding() {
-	const navigate = useNavigate();
+export async function loader({ request }: Route.LoaderArgs) {
+	const ses = await Session.fromRequest(request);
+	const jwt = ses.login();
+	setupClient(jwt);
+}
+
+export async function action({ request }: Route.ActionArgs) {
+	const ses = await Session.fromRequest(request);
+	const jwt = ses.login();
+	setupClient(jwt);
+
+	const data = await request.json();
+	// Final Step: Initialize User Progress
+	handleResponse(
+		await userMePartialUpdate({
+			body: data,
+		}),
+	);
+	throw redirect("/");
+}
+
+export default function Onboarding({}: Route.ComponentProps) {
+	const submit = useSubmit();
 	const [step, setStep] = useState<OnboardingStep>("INTERESTS");
 	const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
-	const [currentIndex, setCurrentIndex] = useState(0);
+	const [currentIndex, setCurrentIndex] = useState(2);
 	const [selectedOption, setSelectedOption] = useState<number | null>(null);
 
 	const toggleInterest = (interest: string) => {
@@ -61,17 +90,15 @@ export default function Onboarding() {
 			setCurrentIndex((prev) => prev + 1);
 			setSelectedOption(null);
 		} else {
-			// Final Step: Initialize User Progress
-			handleResponse(
-				await userMePartialUpdate({
-					body: {
-						progress: {
-							interests: selectedInterests,
-						},
-					},
-				}),
+			await submit(
+				{
+					interests: selectedInterests,
+				},
+				{
+					encType: "application/json",
+					method: "POST",
+				},
 			);
-			await navigate("/");
 		}
 	};
 
@@ -149,7 +176,6 @@ export default function Onboarding() {
 						<Button
 							variant="contained"
 							size="large"
-							disabled={selectedInterests.length === 0}
 							onClick={startDiagnostic}
 							sx={{ px: 4, py: 1.5, fontSize: "1.1rem" }}
 						>
@@ -186,7 +212,6 @@ export default function Onboarding() {
 							question={DIAGNOSTIC_QUESTIONS[currentIndex].question}
 							options={DIAGNOSTIC_QUESTIONS[currentIndex].options}
 							selectedOption={selectedOption}
-							onOptionSelect={handleOptionSelect}
 							onOptionSelect={handleOptionSelect}
 							onSubmit={handleSubmitAnswer}
 						/>
