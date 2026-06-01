@@ -1,0 +1,7 @@
+
+run *args:
+    pnpm run dev {{args}}
+
+run-all:
+     tmux new-session -d 'just run --host' \; new-window 'cd ../backend && direnv exec . just'
+

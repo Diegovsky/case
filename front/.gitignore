@@ -1,5 +1,5 @@
-.DS_Store
-.env
+.*
+!.git*
 /node_modules/
 
 # React Router
@@ -10,3 +10,5 @@
 .dolt/
 *.db
 .beads-credential-key
+
+app/client

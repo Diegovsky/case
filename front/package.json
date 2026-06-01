@@ -1,0 +1,33 @@
+{
+  "name": "front",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "react-router build",
+    "dev": "react-router dev",
+    "start": "react-router-serve ./build/server/index.js",
+    "typecheck": "react-router typegen && tsc",
+    "generate:api": "openapi-ts"
+  },
+  "dependencies": {
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.1",
+    "@mui/material": "^9.0.1",
+    "@react-router/node": "7.16.0",
+    "@react-router/serve": "7.16.0",
+    "isbot": "^5.1.36",
+    "lucide-react": "^1.17.0",
+    "react": "^19.2.6",
+    "react-dom": "^19.2.6",
+    "react-router": "7.16.0"
+  },
+  "devDependencies": {
+    "@hey-api/openapi-ts": "^0.97.3",
+    "@react-router/dev": "7.16.0",
+    "@types/node": "^22",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
+    "typescript": "^5.9.3",
+    "vite": "^8.0.3"
+  }
+}

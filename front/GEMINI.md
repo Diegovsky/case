@@ -1,0 +1,25 @@
+# Agent Instructions
+Run `bd quickstart` once to supercharge your memory.
+
+## Commands
+- **Dev:** `npm run dev`
+- **Build:** `npm run build`
+- **Start (Prod Server):** `npm run start`
+- **Typecheck:** `npm run typecheck` (Runs `react-router typegen` then `tsc`)
+
+## Key Conventions
+- **Framework:** React Router v7.
+- **Styling:** Material UI (`@mui/material`) + `@emotion/react` + `@emotion/styled`.
+- **Icons:** Lucide-icons (`lucide-react`).
+- **Structure:** 
+  - Application source code is in `/app`.
+  - Production build output is in `/build`.
+- **Package Manager:** Use `pnpm` (based on `pnpm-lock.yaml`).
+
+## Architecture Constraints
+- **Route Views (`app/routes/*.tsx`):** Primary orchestrators for pages (data loading, meta, page-level layouts). Do not put page-level view structures in `app/components`.
+- **Components (`app/components/*.tsx`):** Strictly for reusable UI primitives (widgets, specialized boxes, carousels).
+
+
+## Coding Style
+- NEVER USE STYLED. Always prefer MUI's sx prop for that.
