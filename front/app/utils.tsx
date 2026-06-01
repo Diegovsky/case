@@ -19,3 +19,12 @@ export class Hook<T> {
 export const fadeVisibility = {
 	transition: "opacity 0.2s",
 };
+
+export function handleResponse<T extends {}>(
+	val:
+		| { data: T | undefined; error: undefined }
+		| { data: undefined; error: unknown },
+): T {
+	if (val.data !== undefined) return val.data;
+	throw val.error;
+}

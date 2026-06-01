@@ -1,14 +1,36 @@
 import type { Route } from "./+types/login";
-import { Box, Button, TextField, Typography, Container } from "@mui/material";
+import {
+	Box,
+	Button,
+	TextField,
+	Typography,
+	Container,
+	Link,
+} from "@mui/material";
 import { useNavigate } from "react-router";
+import { useState } from "react";
+import { authLoginCreate, userCreate } from "~/client";
+import { handleResponse } from "~/utils";
 
-export default function Login() {
+export default function Login({}: Route.ComponentProps) {
 	const navigate = useNavigate();
+	const [isSignUp, setIsSignUp] = useState(false);
 
-	const handleLogin = (e: React.FormEvent) => {
+	const handleAuth = async (e: React.SubmitEvent) => {
 		e.preventDefault();
-		// Mock authentication
-		navigate("/onboarding");
+		const data: any = Object.fromEntries(new FormData(e.target));
+		if (isSignUp) {
+			await userCreate({ body: data });
+			await navigate("/onboarding");
+		} else {
+			const user = handleResponse(await authLoginCreate({ body: data })).user;
+			console.log(user);
+			if (!user.progress) {
+				await navigate("/onboarding");
+			} else {
+				await navigate("/");
+			}
+		}
 	};
 
 	return (
@@ -23,11 +45,11 @@ export default function Login() {
 				}}
 			>
 				<Typography variant="h4" component="h1">
-					Welcome Back
+					{isSignUp ? "Create Account" : "Welcome Back"}
 				</Typography>
 				<Box
 					component="form"
-					onSubmit={handleLogin}
+					onSubmit={handleAuth}
 					sx={{
 						display: "flex",
 						flexDirection: "column",
@@ -35,27 +57,52 @@ export default function Login() {
 						width: "100%",
 					}}
 				>
+					{isSignUp && (
+						<>
+							<TextField
+								name="first_name"
+								label="First Name"
+								fullWidth
+								required
+							/>
+							<TextField
+								name="last_name"
+								label="Last Name"
+								fullWidth
+								required
+							/>
+						</>
+					)}
 					<TextField
+						name="email"
 						label="Email"
 						fullWidth
+						value="admin@email.com"
 						required
 						type="email"
 					/>
 					<TextField
+						value="admin"
+						name="password"
 						label="Password"
 						fullWidth
 						required
 						type="password"
 					/>
-					<Button
-						type="submit"
-						variant="contained"
-						fullWidth
-						size="large"
-					>
-						Sign In
+					<Button type="submit" variant="contained" fullWidth size="large">
+						{isSignUp ? "Sign Up" : "Sign In"}
 					</Button>
 				</Box>
+				<Link
+					component="button"
+					variant="body2"
+					onClick={() => setIsSignUp(!isSignUp)}
+					sx={{ cursor: "pointer", textDecoration: "none" }}
+				>
+					{isSignUp
+						? "Already have an account? Sign In"
+						: "Don't have an account? Sign Up"}
+				</Link>
 			</Box>
 		</Container>
 	);
