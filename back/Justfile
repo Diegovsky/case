@@ -1,0 +1,18 @@
+
+run *args:
+    python manage.py runserver {{args}}
+
+makemigrations *args:
+    python manage.py makemigrations {{args}}
+
+migrate *args:
+    python manage.py migrate {{args}}
+
+seed *args:
+    python manage.py seed {{args}}
+
+redb:
+    rm db.sqlite3
+    just migrate
+    just seed
+    

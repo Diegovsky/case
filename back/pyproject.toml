@@ -1,0 +1,16 @@
+[project]
+name = "back"
+version = "0.1.0"
+requires-python = ">=3.12"
+dependencies = [
+    "dj-rest-auth>=7.2.0",
+    "django>=6.0.5",
+    "django-filter>=25.2",
+    "django-hashids>=0.7.1",
+    "django-pydantic-field>=0.5.4",
+    "django-stubs>=6.0.5",
+    "djangorestframework>=3.17.1",
+    "djangorestframework-simplejwt[crypto]>=5.5.1",
+    "djangorestframework-stubs>=3.17.0",
+    "drf-spectacular[sidecar]>=0.29.0",
+]
