@@ -1,0 +1,23 @@
+:root {
+  
+}
+
+.stack {
+  display: grid;
+  @media (width > 800px) {
+    grid-auto-flow: column;
+    grid-auto-columns: 1fr;
+  }
+
+  @media (width <= 800px) {
+    grid-template: "cell";
+    & > * {
+      grid-area: cell;
+    }
+
+    & > *:not(:last-child) {
+      display: none;
+    }
+  }
+
+}

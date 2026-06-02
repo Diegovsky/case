@@ -5,6 +5,7 @@ import {
 	List,
 	ListItem,
 	ListItemText,
+	type BoxProps,
 } from "@mui/material";
 import { Send } from "lucide-react";
 
@@ -16,20 +17,22 @@ export interface ChatMessage {
 	text: string;
 }
 
-interface ChatProps {
+interface ChatProps extends BoxProps {
 	messages: ChatMessage[];
 }
 
-export default function Chat({ messages }: ChatProps) {
+export default function Chat({ messages, sx, ...props }: ChatProps) {
 	return (
 		<Box
 			sx={{
 				display: "flex",
 				flexDirection: "column",
+				...sx,
 			}}
+			{...props}
 		>
-			<Box sx={{ overflow: "hidden" }}>
-				<List sx={{ flexGrow: 1, p: 2 }}>
+			<Box sx={{ overflow: "auto", maxHeight: "100%", flexGrow: 1 }}>
+				<List sx={{ p: 2 }}>
 					{messages.map((m) => (
 						<ListItem key={m.id} alignItems="flex-start">
 							<ListItemText primary={m.sender} secondary={m.text} />
@@ -39,11 +42,10 @@ export default function Chat({ messages }: ChatProps) {
 			</Box>
 			<Box
 				sx={{
-					borderTop: 1,
-					position: "sticky",
-					bottom: 0,
-					p: 2,
 					bgcolor: "background.paper",
+					justifySelf: "flex",
+					borderTop: 1,
+					p: 2,
 					display: "flex",
 				}}
 			>
