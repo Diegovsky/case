@@ -1,10 +1,11 @@
 from django_stubs_ext.db.models.manager import RelatedManager
+from re import compile
 from django.utils.text import slugify
 from pathlib import Path
 from django_pydantic_field import SchemaField
 from django.utils.translation.trans_null import _
 from django.contrib.auth.hashers import is_password_usable, identify_hasher
-from typing import override, Self
+from typing import override, Self, Iterable
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django_hashids import HashidsField
@@ -79,6 +80,13 @@ def get_upload_path(instance: "ModuleSection", filename: str):
     return str(Path(f"module/{module_name}/section/{section_name}/{filename}"))
 
 
+def extract_title(text: Iterable[str]) -> str | None:
+    reg = compile(r"^# (.+)$")
+    for x in text:
+        if match := reg.match(x):
+            return match.group(1)
+
+
 class ModuleSection(Model):
     module = models.ForeignKey(
         Module, on_delete=models.CASCADE, related_name="sections"
@@ -87,3 +95,8 @@ class ModuleSection(Model):
         max_length=128,
     )
     content = models.FileField(upload_to=get_upload_path)
+
+    def save(self, **kw):
+        with self.content.open("r") as f:
+            self.name = extract_title(f)
+        super().save(**kw)

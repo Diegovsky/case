@@ -1,0 +1,9 @@
+
+[pytest]
+DJANGO_SETTINGS_MODULE = 'back.settings'
+pythonpath = [
+  "."
+]
+testpaths = [
+  "tests"
+]

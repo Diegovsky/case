@@ -1,7 +1,8 @@
+from django.contrib.auth.models import AnonymousUser
+from rest_framework.request import Request
 from typing import Any
 from api.models import User, UserProgress
 from rest_framework import serializers
-from rest_framework.serializers import ModelSerializer
 
 
 class MetaMeta(type):
@@ -28,6 +29,26 @@ class Meta(metaclass=MetaMeta):
     fields: None | list = None
 
 
+class ModelSerializer(serializers.ModelSerializer):
+    @property
+    def request(self) -> Request:
+        request = self.context["request"]
+        assert isinstance(request, Request)
+        return request
+
+    @property
+    def maybe_user(self) -> User | AnonymousUser:
+        user = self.request.user
+        assert isinstance(user, (User, AnonymousUser))
+        return user
+
+    @property
+    def user(self) -> User:
+        user = self.request.user
+        assert isinstance(user, User)
+        return user
+
+
 class UserProgressSerializer(ModelSerializer):
     class Meta(Meta):
         model = UserProgress
@@ -36,8 +57,23 @@ class UserProgressSerializer(ModelSerializer):
 
 class UserSerializer(ModelSerializer):
     password = serializers.CharField(write_only=True)
-    progress = UserProgressSerializer()
+    progress = UserProgressSerializer(required=False)
+    is_admin = serializers.BooleanField(source="is_superuser", default=False)
+
+    def validate_is_admin(self, value: bool):
+        if value and not self.maybe_user.is_superuser:
+            raise serializers.ValidationError("Only admins can create admins.")
+
+        return value
 
     class Meta(Meta):
         model = User
-        fields = ["hashid", "first_name", "last_name", "email", "password", "progress"]
+        fields = [
+            "hashid",
+            "first_name",
+            "last_name",
+            "is_admin",
+            "email",
+            "password",
+            "progress",
+        ]
