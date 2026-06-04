@@ -130,13 +130,13 @@ USE_TZ = True
 STATIC_URL = "static/"
 
 REST_FRAMEWORK = {
+    "EXCEPTION_HANDLER": "api.exceptions.global_exception_handler",
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
     "DEFAULT_PERMISSION_CLASSES": [
         "rest_framework.permissions.IsAuthenticated",
     ],
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "rest_framework_simplejwt.authentication.JWTAuthentication",
-        "dj_rest_auth.jwt_auth.JWTCookieAuthentication",
         "rest_framework.authentication.SessionAuthentication",
     ),
 }
@@ -145,22 +145,21 @@ REST_AUTH = {
     "USER_DETAILS_SERIALIZER": "api.serializers.UserSerializer",
     "USE_JWT": True,
     "JWT_AUTH_COOKIE_USE_CSRF": False,
-    "JWT_AUTH_COOKIE": "access",
-    "JWT_AUTH_REFRESH_COOKIE": "refresh",
+    "JWT_AUTH_COOKIE": None,
+    "JWT_AUTH_REFRESH_COOKIE": None,
     "JWT_AUTH_HTTPONLY": False,
     "JWT_AUTH_SECURE": False,  # True in production!
     "JWT_AUTH_SAMESITE": "Lax",
     "JWT_AUTH_RETURN_EXPIRATION": True,
 }
 
-# SIMPLE_JWT = {
-#     "TOKEN_OBTAIN_SERIALIZER": "api.auth.LoginSerializer",
-#     "ACCESS_TOKEN_LIFETIME": timedelta(minutes=15),
-#     "REFRESH_TOKEN_LIFETIME": timedelta(hours=1),
-#     "ROTATE_REFRESH_TOKENS": True,
-#     "BLACKLIST_AFTER_ROTATION": True,
-#     "UPDATE_LAST_LOGIN": True,
-# }
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(hours=2),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
+    # "ROTATE_REFRESH_TOKENS": True,
+    # "BLACKLIST_AFTER_ROTATION": True,
+    # "UPDATE_LAST_LOGIN": True,
+}
 
 DJANGO_HASHIDS_SALT = "223902"
 DJANGO_HASHIDS_MIN_LENGTH = 10

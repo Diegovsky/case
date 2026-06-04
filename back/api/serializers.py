@@ -1,6 +1,6 @@
 from django.contrib.auth.models import AnonymousUser
 from rest_framework.request import Request
-from typing import Any
+from typing import Any, override
 from api.models import User, UserProgress
 from rest_framework import serializers
 
@@ -48,6 +48,12 @@ class ModelSerializer(serializers.ModelSerializer):
         assert isinstance(user, User)
         return user
 
+    def __getattr__(self, key: str):
+        if (val := self.fields.get(key, None)) is not None:
+            return val
+
+        raise AttributeError(key)
+
 
 class UserProgressSerializer(ModelSerializer):
     class Meta(Meta):
@@ -65,6 +71,17 @@ class UserSerializer(ModelSerializer):
             raise serializers.ValidationError("Only admins can create admins.")
 
         return value
+
+    @override
+    def update(self, instance: User, validated_data: dict[str, Any]):
+        if (progress := validated_data.pop("progress", None)) is not None:
+            try:
+                self.progress.update(instance.progress, validated_data=progress)
+            except User.progress.RelatedObjectDoesNotExist:
+                progress["user"] = instance
+                self.progress.create(progress)
+
+        return super().update(instance, validated_data)
 
     class Meta(Meta):
         model = User

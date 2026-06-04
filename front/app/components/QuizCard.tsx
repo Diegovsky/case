@@ -1,4 +1,4 @@
-import type { Route } from "./+types/quiz-card";
+import { useEffect, useState } from "react";
 import {
 	Box,
 	Typography,
@@ -10,21 +10,19 @@ import {
 	CardContent,
 } from "@mui/material";
 
-export interface QuizCardProps {
+export interface Question {
 	question: string;
 	options: string[];
-	selectedOption: number | null;
-	onOptionSelect: (index: number) => void;
-	onSubmit?: () => void;
 }
 
 export default function QuizCard({
-	question,
-	options,
-	selectedOption,
-	onOptionSelect,
+	question: { question, options },
 	onSubmit,
-}: QuizCardProps) {
+}: {
+	question: Question;
+	onSubmit?: (index: number) => void;
+}) {
+	const [selectedOption, setSelectedOption] = useState(0);
 	return (
 		<Card variant="outlined" sx={{ maxWidth: 600, mx: "auto", mt: 4 }}>
 			<CardContent sx={{ p: 4 }}>
@@ -34,7 +32,7 @@ export default function QuizCard({
 				<Box sx={{ mb: 4 }}>
 					<RadioGroup
 						value={selectedOption}
-						onChange={(e) => onOptionSelect(parseInt(e.target.value))}
+						onChange={(e) => setSelectedOption(parseInt(e.target.value))}
 					>
 						{options.map((option, index) => (
 							<FormControlLabel
@@ -51,7 +49,11 @@ export default function QuizCard({
 					<Button
 						variant="contained"
 						disabled={selectedOption === null}
-						onClick={onSubmit}
+						onClick={() => {
+							if (onSubmit) {
+								onSubmit(selectedOption);
+							}
+						}}
 						size="large"
 					>
 						Submit Answer

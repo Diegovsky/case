@@ -27,11 +27,8 @@ async function expiredMiddleware(user: Jwt, resp: Response, req: Request) {
 			console.log("re-authing");
 
 			await refresh(user);
-			const refreshReq = new Request(req, {
-				headers: {
-					Authorization: `Bearer ${user.access}`,
-				},
-			});
+			req.headers.set("Authorization", `Bearer ${user.access}`);
+			const refreshReq = new Request(req);
 
 			resp = await fetch(refreshReq);
 		} else {

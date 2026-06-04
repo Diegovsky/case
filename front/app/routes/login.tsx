@@ -7,7 +7,7 @@ import {
 	Typography,
 } from "@mui/material";
 import { useState } from "react";
-import { data, redirect } from "react-router";
+import { data, Form, redirect } from "react-router";
 import { authLoginCreate, userCreate } from "~/client";
 import Session from "~/session.server";
 import { handleResponse } from "~/utils";
@@ -39,7 +39,7 @@ export async function action({ request }: Route.ActionArgs) {
 		console.log(jwt.user);
 
 		// go to /onboarding if progress is undefined/null
-		const route = "/"; //!jwt.user.progress ? "/onboarding" : "/";
+		const route = !jwt.user.progress ? "/onboarding" : "/";
 		throw redirect(route, await session.commit());
 	}
 }
@@ -50,8 +50,6 @@ export async function loader({ request }: Route.LoaderArgs) {
 
 export default function Login({}: Route.ComponentProps) {
 	const [isSignUp, setIsSignUp] = useState(false);
-
-	const handleAuth = async (e: React.SubmitEvent) => {};
 
 	return (
 		<Container maxWidth="xs">
@@ -68,9 +66,8 @@ export default function Login({}: Route.ComponentProps) {
 					{isSignUp ? "Create Account" : "Welcome Back"}
 				</Typography>
 				<Box
-					component="form"
+					component={Form}
 					method="POST"
-					onSubmit={handleAuth}
 					sx={{
 						display: "flex",
 						flexDirection: "column",
@@ -98,12 +95,10 @@ export default function Login({}: Route.ComponentProps) {
 						name="email"
 						label="Email"
 						fullWidth
-						value="admin@email.com"
 						required
 						type="email"
 					/>
 					<TextField
-						value="admin"
 						name="password"
 						label="Password"
 						fullWidth

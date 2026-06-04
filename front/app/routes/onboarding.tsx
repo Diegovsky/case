@@ -10,20 +10,12 @@ import {
 	CardContent,
 	LinearProgress,
 } from "@mui/material";
-import {
-	Form,
-	redirect,
-	useFormAction,
-	useNavigate,
-	useSubmit,
-} from "react-router";
+import { redirect, useNavigate } from "react-router";
 import { useState } from "react";
 import QuizCard from "~/components/QuizCard";
 import { DIAGNOSTIC_QUESTIONS } from "~/data/diagnostic-questions";
 import { userMePartialUpdate } from "~/client";
 import { handleResponse } from "~/utils";
-import Session from "~/session.server";
-import { setupClient } from "~/auth";
 
 const INTERESTS = [
 	"Sports",
@@ -40,33 +32,11 @@ const INTERESTS = [
 
 type OnboardingStep = "INTERESTS" | "DIAGNOSTIC";
 
-export async function loader({ request }: Route.LoaderArgs) {
-	const ses = await Session.fromRequest(request);
-	const jwt = ses.login();
-	setupClient(jwt);
-}
-
-export async function action({ request }: Route.ActionArgs) {
-	const ses = await Session.fromRequest(request);
-	const jwt = ses.login();
-	setupClient(jwt);
-
-	const data = await request.json();
-	// Final Step: Initialize User Progress
-	handleResponse(
-		await userMePartialUpdate({
-			body: { progress: data },
-		}),
-	);
-	throw redirect("/");
-}
-
 export default function Onboarding({}: Route.ComponentProps) {
-	const submit = useSubmit();
+	const navigate = useNavigate();
 	const [step, setStep] = useState<OnboardingStep>("INTERESTS");
 	const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
-	const [currentIndex, setCurrentIndex] = useState(2);
-	const [selectedOption, setSelectedOption] = useState<number | null>(null);
+	const [currentIndex, setCurrentIndex] = useState(0);
 
 	const toggleInterest = (interest: string) => {
 		setSelectedInterests((prev) =>
@@ -81,24 +51,19 @@ export default function Onboarding({}: Route.ComponentProps) {
 		setStep("DIAGNOSTIC");
 	};
 
-	const handleOptionSelect = (index: number) => {
-		setSelectedOption(index);
-	};
-
 	const handleSubmitAnswer = async () => {
 		if (currentIndex < DIAGNOSTIC_QUESTIONS.length - 1) {
 			setCurrentIndex((prev) => prev + 1);
-			setSelectedOption(null);
 		} else {
-			await submit(
-				{
-					interests: selectedInterests,
-				},
-				{
-					encType: "application/json",
-					method: "POST",
-				},
+			const data = {
+				interests: selectedInterests,
+			};
+			handleResponse(
+				await userMePartialUpdate({
+					body: { progress: data },
+				}),
 			);
+			navigate("/");
 		}
 	};
 
@@ -138,7 +103,7 @@ export default function Onboarding({}: Route.ComponentProps) {
 
 						<Grid container spacing={2} sx={{ width: "100%" }}>
 							{INTERESTS.map((interest) => (
-								<Grid item xs={6} sm={4} md={3} key={interest}>
+								<Grid size={{ xs: 6, sm: 4, md: 3 }} key={interest}>
 									<Card
 										variant="outlined"
 										sx={{
@@ -153,16 +118,14 @@ export default function Onboarding({}: Route.ComponentProps) {
 											<CardContent>
 												<Typography
 													variant="body1"
-													fontWeight={
-														selectedInterests.includes(interest)
+													sx={{
+														fontWeight: selectedInterests.includes(interest)
 															? "bold"
-															: "normal"
-													}
-													color={
-														selectedInterests.includes(interest)
+															: "normal",
+														color: selectedInterests.includes(interest)
 															? "primary.main"
-															: "text.primary"
-													}
+															: "text.primary",
+													}}
 												>
 													{interest}
 												</Typography>
@@ -209,10 +172,7 @@ export default function Onboarding({}: Route.ComponentProps) {
 						</Box>
 
 						<QuizCard
-							question={DIAGNOSTIC_QUESTIONS[currentIndex].question}
-							options={DIAGNOSTIC_QUESTIONS[currentIndex].options}
-							selectedOption={selectedOption}
-							onOptionSelect={handleOptionSelect}
+							question={DIAGNOSTIC_QUESTIONS[currentIndex]}
 							onSubmit={handleSubmitAnswer}
 						/>
 					</Box>

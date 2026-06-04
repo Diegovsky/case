@@ -1,32 +1,43 @@
-import type { Route } from "./+types/home";
 import {
 	Box,
+	Card,
+	CardContent,
+	CardHeader,
 	Container,
-	useMediaQuery,
-	useTheme,
-	Typography,
 	Fab,
-	Stack,
+	type CardProps,
 } from "@mui/material";
-import { MessageSquare, X } from "lucide-react";
-import Chat from "../components/Chat";
-import { useApp } from "~/context";
+import { MessageSquare } from "lucide-react";
 import { useState } from "react";
+import Chat, { type ChatMessage } from "../components/Chat";
 import "./home.css";
 
-export function meta({}: Route.MetaArgs) {
-	return [
-		{ title: "Adaptive Learning Dashboard" },
-		{
-			name: "description",
-			content: "Your personalized math learning workspace.",
-		},
-	];
-}
+const messages: ChatMessage[] = [
+	{ id: "h", sender: "User", text: "ola" },
+	{ id: "h", sender: "User", text: "ola" },
+	{ id: "h", sender: "User", text: "ola" },
+	{ id: "h", sender: "User", text: "ola" },
+	{ id: "h", sender: "User", text: "ola" },
+	{ id: "h", sender: "User", text: "ola" },
+	{ id: "h", sender: "User", text: "ola" },
+	{ id: "h", sender: "User", text: "ola" },
+	{ id: "h", sender: "User", text: "ola" },
+	{ id: "h", sender: "User", text: "ola" },
+	{ id: "h", sender: "User", text: "ola" },
+	{ id: "h", sender: "User", text: "ola" },
+	{ id: "h", sender: "User", text: "ola" },
+	{ id: "h", sender: "User", text: "ola" },
+	{ id: "h", sender: "User", text: "ola" },
+	{ id: "h", sender: "User", text: "ola" },
+	{ id: "h", sender: "User", text: "ola" },
+	{ id: "h", sender: "User", text: "ola" },
+	{ id: "h", sender: "User", text: "ola" },
+	{ id: "h", sender: "User", text: "ola" },
+	{ id: "h", sender: "User", text: "ola" },
+];
 
-export default function Home() {
-	const theme = useTheme();
-	const [chatOpen, setChatOpen] = useState(true);
+function Body({ children }: { children?: React.ReactNode }) {
+	const [chatOpen, setChatOpen] = useState(false);
 
 	return (
 		<Box
@@ -37,12 +48,13 @@ export default function Home() {
 		>
 			<Box
 				sx={{
+					flex: 1,
+					display: "contents",
 					position: "relative",
-					bgcolor: "red",
 					p: 2,
 				}}
 			>
-				hi
+				<div className="scroll-container"> {children}</div>
 				<Fab
 					data-open={chatOpen}
 					color="primary"
@@ -62,9 +74,43 @@ export default function Home() {
 					sx={{
 						borderLeft: 1,
 					}}
-					messages={[]}
+					messages={messages}
 				/>
 			)}
 		</Box>
+	);
+}
+
+function InfoCard({
+	section,
+	...props
+}: {
+	section: { title: string; content: string };
+} & CardProps) {
+	return (
+		<Card {...props}>
+			<CardHeader title={section.title}></CardHeader>
+			<CardContent>{section.content}</CardContent>
+		</Card>
+	);
+}
+
+export default function Home() {
+	return (
+		<Body>
+			<Box
+				component={Container}
+				sx={{
+					my: 2,
+					display: "grid",
+					gap: 2,
+					gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))",
+				}}
+			>
+				{Array.from({ length: 10 }).map((_, i) => (
+					<InfoCard key={i} section={{ title: `Title-${i}`, content: "ola" }} />
+				))}
+			</Box>
+		</Body>
 	);
 }

@@ -1,3 +1,4 @@
+from django.db.models.fields.related import ReverseOneToOneDescriptor
 from django_stubs_ext.db.models.manager import RelatedManager
 from re import compile
 from django.utils.text import slugify
@@ -45,7 +46,7 @@ class User(AbstractUser, Model):
 
     # Override to make 'email' not blank
     email = models.EmailField(_("email address"), unique=True)
-    progress: "UserProgress"
+    progress: "ReverseOneToOneDescriptor[User, UserProgress]"
 
     @override
     def save(self, **kw):

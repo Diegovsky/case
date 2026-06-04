@@ -19,10 +19,7 @@ import { fadeVisibility, type Hook } from "~/utils";
 const DRAWER_WIDTH = 240;
 const COLLAPSED_WIDTH = 60;
 
-const sections = [
-	{ label: "Chat", icon: <MessageSquare />, link: "/" },
-	{ label: "Learn", icon: <GraduationCap />, link: "/topics" },
-];
+const sections = [{ label: "Learn", icon: <MessageSquare />, link: "/" }];
 
 export default function AppDrawer({ open }: { open: Hook<boolean> }) {
 	const fadeOnClose = {

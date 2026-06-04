@@ -31,7 +31,10 @@ export default function Chat({ messages, sx, ...props }: ChatProps) {
 			}}
 			{...props}
 		>
-			<Box sx={{ overflow: "auto", maxHeight: "100%", flexGrow: 1 }}>
+			<Box
+				className="scroll-container"
+				sx={{ overflow: "auto", maxHeight: "100%", flexGrow: 1 }}
+			>
 				<List sx={{ p: 2 }}>
 					{messages.map((m) => (
 						<ListItem key={m.id} alignItems="flex-start">
