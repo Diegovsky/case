@@ -7,7 +7,7 @@ import {
 	Typography,
 } from "@mui/material";
 import { useState } from "react";
-import { redirect } from "react-router";
+import { data, redirect } from "react-router";
 import { authLoginCreate, userCreate } from "~/client";
 import Session from "~/session.server";
 import { handleResponse } from "~/utils";
@@ -32,18 +32,20 @@ export async function action({ request }: Route.ActionArgs) {
 					email: data.email,
 					password: data.password,
 				},
+				auth: () => null,
 			}),
 		);
 		session.setTokens(jwt);
+		console.log(jwt.user);
 
 		// go to /onboarding if progress is undefined/null
-		const route = !jwt.user.progress ? "/onboarding" : "/";
+		const route = "/"; //!jwt.user.progress ? "/onboarding" : "/";
 		throw redirect(route, await session.commit());
 	}
 }
 export async function loader({ request }: Route.LoaderArgs) {
 	const ses = await Session.fromRequest(request);
-	await ses.delete();
+	return data({}, await ses.delete());
 }
 
 export default function Login({}: Route.ComponentProps) {

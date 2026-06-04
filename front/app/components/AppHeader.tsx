@@ -23,7 +23,7 @@ export default function AppHeader({ open }: { open: Hook<boolean> }) {
 				</Typography>
 				<Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
 					<Typography variant="body1">{user.first_name}</Typography>
-					<Avatar alt="John Doe" src="/static/images/avatar/1.jpg" />
+					<Avatar alt="John Doe" />
 				</Box>
 			</Toolbar>
 		</AppBar>

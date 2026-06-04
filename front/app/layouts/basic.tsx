@@ -1,19 +1,20 @@
+import { Box } from "@mui/material";
 import { useState } from "react";
 import { Outlet } from "react-router";
-import { Box } from "@mui/material";
-import AppDrawer from "~/components/Drawer";
-import AppHeader from "~/components/AppHeader";
-import { Hook } from "~/utils";
-import type { Route } from "./+types/basic";
-import Session from "~/session.server";
 import { setupClient } from "~/auth";
 import type { User } from "~/client";
+import AppHeader from "~/components/AppHeader";
+import AppDrawer from "~/components/Drawer";
 import { AppProvider } from "~/context";
+import Session from "~/session.server";
+import { Hook } from "~/utils";
+import type { Route } from "./+types/basic";
 
 export async function loader({ request }: Route.LoaderArgs): Promise<User> {
 	const ses = await Session.fromRequest(request);
 	const jwt = ses.login();
 	setupClient(jwt);
+
 	return jwt.user;
 }
 

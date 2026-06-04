@@ -7,39 +7,37 @@ function goToLogin(): never {
 	console.log("Unauth: login NOW");
 	throw redirect("/login");
 }
-
-async function refresh(user: Jwt): Promise<string> {
+async function refresh(user: Jwt) {
 	const data = await authTokenRefreshCreate({
-		body: {
-			refresh: user.refresh,
-		},
+		body: user,
 	});
-	const access = data.data?.access;
-	if (access === undefined) {
+	const tokens = data.data;
+	if (tokens === undefined) {
 		goToLogin();
 	}
-	user.access = access;
-	return access as string;
+	user.access = tokens.access;
+	if (tokens.refresh) user.refresh = tokens.refresh;
 }
 
 async function expiredMiddleware(user: Jwt, resp: Response, req: Request) {
-	if (
-		resp.status === 401 &&
-		(await resp.clone().json()).code === "token_not_valid"
-	) {
-		console.log("re-authing");
-		const access = await refresh(user);
-		resp = await fetch(
-			new Request(req, {
+	if (resp.status === 401) {
+		const respBody = await resp.clone().json();
+		console.log({ url: req.url, code: resp.status });
+		if (respBody.code === "token_not_valid" && !req.url.includes("auth")) {
+			console.log("re-authing");
+
+			await refresh(user);
+			const refreshReq = new Request(req, {
 				headers: {
-					Authorization: `Bearer ${access}`,
+					Authorization: `Bearer ${user.access}`,
 				},
-			}),
-		);
-		setUser(user);
-	} else if (resp.status === 401 && !req.url.endsWith("/auth/")) {
-		console.error(await resp.clone().text());
-		goToLogin();
+			});
+
+			resp = await fetch(refreshReq);
+		} else {
+			console.log("Invalid credentials, re-login");
+			goToLogin();
+		}
 	}
 	return resp;
 }
@@ -52,11 +50,10 @@ export function setupClient(user: Jwt) {
 	client.interceptors.response.use(async (resp, req) =>
 		expiredMiddleware(user, resp, req),
 	);
-	setUser(user);
-}
-
-function setUser(user: Jwt) {
 	client.setConfig({
 		auth: () => user.access,
+		throwOnError: true,
+		fetch: async (req, opts) =>
+			await fetch(req instanceof Request ? req.clone() : req, opts),
 	});
 }

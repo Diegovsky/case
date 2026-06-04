@@ -56,10 +56,15 @@ export default class Session {
 
 	login(): Jwt {
 		const auth = this.get(AUTH_KEY) as Jwt | undefined;
-		if (auth === undefined) {
+		if (
+			auth === undefined ||
+			typeof auth.access === "undefined" ||
+			typeof auth.refresh === "undefined"
+		) {
 			console.log("redirecting to log in");
 			throw redirect("/login");
 		}
+		console.log("AUTH INFO:", auth);
 		return auth;
 	}
 

@@ -68,7 +68,9 @@ export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
 			<Typography variant="h4" gutterBottom>
 				{message}
 			</Typography>
-			<Typography variant="body1">{details}</Typography>
+			<Typography variant="body1">
+				<pre>{details}</pre>
+			</Typography>
 			{stack && (
 				<Paper sx={{ p: 2, mt: 2, overflowX: "auto" }}>
 					<pre>

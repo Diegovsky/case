@@ -55,7 +55,7 @@ export async function action({ request }: Route.ActionArgs) {
 	// Final Step: Initialize User Progress
 	handleResponse(
 		await userMePartialUpdate({
-			body: data,
+			body: { progress: data },
 		}),
 	);
 	throw redirect("/");
