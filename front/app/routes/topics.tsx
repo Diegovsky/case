@@ -1,4 +1,8 @@
-import { sectionRetrieve, userMePartialUpdate } from "~/client";
+import {
+	sectionRetrieve,
+	userMeCompleteSectionCreate,
+	userMePartialUpdate,
+} from "~/client";
 import type { Route } from "./+types/topics";
 import { handleResponse } from "~/utils";
 import { Box, Typography } from "@mui/material";
@@ -19,12 +23,9 @@ export default function Topics({ loaderData: section }: Route.ComponentProps) {
 	useEffect(() => {
 		(async () => {
 			handleResponse(
-				await userMePartialUpdate({
+				await userMeCompleteSectionCreate({
 					body: {
-						completed_sections: [
-							...app.user.completed_sections.map((s) => s.hashid),
-							section.hashid,
-						],
+						hashid: section.hashid,
 					},
 				}),
 			);

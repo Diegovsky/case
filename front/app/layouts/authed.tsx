@@ -1,11 +1,10 @@
-import { setupClient } from "~/auth";
+import { setupClient, type JWT } from "~/auth";
 import Session from "~/session";
-import type { Jwt, User } from "~/client";
 import type { Route } from "./+types/authed";
 import { AppProvider } from "~/context";
 import { createContext, Outlet, type MiddlewareFunction } from "react-router";
 
-export const jwtContext = createContext<Jwt>();
+export const jwtContext = createContext<JWT>();
 
 const authMiddleware: MiddlewareFunction = async (
 	{ request, context },

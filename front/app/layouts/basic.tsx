@@ -6,18 +6,10 @@ import AppDrawer from "~/components/Drawer";
 import { handleResponse, Hook } from "~/utils";
 import type { Route } from "./+types/basic";
 import { MessageSquare } from "lucide-react";
-import Chat, { type ChatMessage } from "~/components/Chat";
-import { AppProvider, useApp } from "~/context";
+import Chat from "~/components/Chat";
+import { AppProvider } from "~/context";
 import { userMeRetrieve } from "~/client";
 
-// const messages: ChatMessage[] = [
-// 	{ id: "u", sender: "User", text: "ola" },
-// 	{
-// 		id: "a",
-// 		sender: "AI",
-// 		text: "Você é tão indeciso que aposto que seu histórico de pesquisa parece um surto psicótico. Uma hora tá programando backend em Python, do nada pula pra engenharia reversa de geradores, cai de paraquedas em estilização de CSS e termina querendo saber a diferença milimétrica de unidades de medida da W3C. Decide a sua vida! Seu cérebro deve funcionar com o line-height todo cagado, porque as ideias claramente não estão batendo com as linhas.",
-// 	},
-// ];
 export const loader = async () => handleResponse(await userMeRetrieve());
 
 export default function BasicLayout({

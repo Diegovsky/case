@@ -1,38 +1,54 @@
 import {
 	Box,
 	Card,
+	CardActions,
 	CardContent,
 	CardHeader,
-	Container,
-	Fab,
-	Typography,
 	type CardProps,
+	Container,
+	Typography,
 } from "@mui/material";
-import { MessageSquare } from "lucide-react";
-import { Fragment, useMemo, useState } from "react";
-import Chat, { type ChatMessage } from "../components/Chat";
+import { Fragment, useEffect, useId } from "react";
 import "./home.css";
-import type { Route } from "./+types/home";
-import { moduleList, type BriefModuleSection } from "~/client";
-import { handleResponse } from "~/utils";
+import { green, red } from "@mui/material/colors";
+import { Link, useLocation, useNavigate } from "react-router";
+import { type BriefModuleSection, moduleList } from "~/client";
 import InnerHtml from "~/components/InnerHtml";
-import { Link } from "react-router";
 import { useApp } from "~/context";
+import { handleResponse } from "~/utils";
+import type { Route } from "./+types/home";
+
+interface InfoCardProps {
+	completed: boolean;
+	disabled: boolean;
+	section: BriefModuleSection;
+	sectionNames: Record<string, string>;
+}
 
 function InfoCard({
 	section,
 	disabled,
+	completed,
+	sectionNames,
 	...props
-}: {
-	section: BriefModuleSection;
-	disabled: boolean;
-} & CardProps) {
+}: InfoCardProps & CardProps) {
+	const id = `section-${section.hashid}`;
+	const state = disabled ? "disabled" : completed ? "completed" : "normal";
+	const bgColor = {
+		disabled: red[50],
+		completed: green[100],
+		normal: "inherit",
+	};
 	return (
 		<Card
 			component={Link}
+			id={id}
+			onClick={() => window.history.replaceState(null, "", `#${id}`)}
 			variant="outlined"
 			to={`topics/${section.hashid}`}
 			sx={{
+				position: "relative",
+				backgroundColor: bgColor[state],
 				textDecoration: "none",
 				color: disabled ? "text.disabled" : "text.main",
 				pointerEvents: disabled ? "none" : "auto",
@@ -40,6 +56,19 @@ function InfoCard({
 			}}
 			{...props}
 		>
+			{completed && (
+				<Typography
+					variant="caption"
+					sx={{
+						position: "absolute",
+						m: 1,
+						top: 0,
+						right: 0,
+					}}
+				>
+					Complete
+				</Typography>
+			)}
 			<CardHeader
 				sx={{
 					"& .MuiCardHeader-title": {
@@ -47,6 +76,14 @@ function InfoCard({
 					},
 				}}
 				title={section.name}
+				subheader={
+					section.dependencies.length > 0 && (
+						<>
+							Needs:{" "}
+							{section.dependencies.map((hashid) => sectionNames[hashid])}
+						</>
+					)
+				}
 			></CardHeader>
 			<CardContent>
 				<InnerHtml content={section.preview} />
@@ -68,14 +105,29 @@ export default function Home({
 }: Route.ComponentProps) {
 	const app = useApp();
 	const { user } = app;
+
 	const availableSections = new Set(
 		user.available_sections.map((s) => s.hashid),
 	);
 	const moduleNames = Object.fromEntries(
 		modules.map((m) => [m.hashid, m.name]),
 	);
+	const sectionNames = Object.fromEntries(
+		modules.flatMap((m) => m.sections.map((s) => [s.hashid, s.name])),
+	);
+
+	const nav = useNavigate();
+	const loc = useLocation();
+
+	useEffect(() => {
+		nav(loc, { replace: true });
+	}, []);
+
+	const rankSection = (a: InfoCardProps) => +10 * a.completed + 11 * a.disabled;
+
 	const availableModules = new Set(user.available_modules.map((s) => s.hashid));
 	app.aiContext = { modules, availableModules, availableSections };
+
 	return (
 		<Box
 			component={Container}
@@ -89,21 +141,30 @@ export default function Home({
 			{modules.map((mod) => (
 				<Fragment key={mod.hashid}>
 					<Box sx={{ gridColumn: "1 / -1" }}>
-						<Typography variant="h4">{mod.name}</Typography>
+						<Typography id={mod.name} variant="h4">
+							{mod.name}
+						</Typography>
 						{mod.dependencies.length > 0 && (
 							<Typography>
-								First complete:{" "}
+								Needs:{" "}
 								{mod.dependencies.map((id) => moduleNames[id]).join(", ")}
 							</Typography>
 						)}
 					</Box>
-					{mod.sections.map((sec, i) => (
-						<InfoCard
-							key={sec.hashid}
-							disabled={!availableSections.has(sec.hashid)}
-							section={sec}
-						/>
-					))}
+					{mod.sections
+						.map((sec) => ({
+							completed: user.completed_sections.some(
+								(s) => s.hashid === sec.hashid,
+							),
+							sectionNames,
+							sections: mod.sections,
+							disabled: !availableSections.has(sec.hashid),
+							section: sec,
+						}))
+						.sort((a, b) => rankSection(a) - rankSection(b))
+						.map((props) => (
+							<InfoCard key={props.section.hashid} {...props} />
+						))}
 				</Fragment>
 			))}
 		</Box>

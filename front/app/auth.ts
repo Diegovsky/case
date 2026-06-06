@@ -1,14 +1,18 @@
 import { redirect } from "react-router";
 import { authTokenRefreshCreate } from "./client/sdk.gen";
 import { client } from "./client/client.gen";
-import type { Jwt } from "./client/types.gen";
+
+export type JWT = {
+	access: string;
+	refresh: string;
+};
 
 function goToLogin(): never {
 	console.log("Unauth: login NOW");
 	throw redirect("/login");
 }
 
-async function refresh(user: Jwt) {
+async function refresh(user: JWT) {
 	const data = await authTokenRefreshCreate({
 		body: user,
 	});
@@ -21,7 +25,7 @@ async function refresh(user: Jwt) {
 }
 
 async function expiredMiddleware(
-	jwt: Jwt | null,
+	jwt: JWT | null,
 	resp: Response,
 	req: Request,
 ) {
@@ -43,7 +47,7 @@ async function expiredMiddleware(
 	return resp;
 }
 
-const state: { jwt: Jwt | null } = {
+const state: { jwt: JWT | null } = {
 	jwt: null,
 };
 
@@ -57,7 +61,7 @@ client.setConfig({
 		await fetch(req instanceof Request ? req.clone() : req, opts),
 });
 
-export function setupClient(jwt: Jwt) {
+export function setupClient(jwt: JWT) {
 	if (!jwt)
 		throw new Error(
 			"User authentication data is required to setup the client.",

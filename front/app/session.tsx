@@ -3,7 +3,7 @@ import {
 	type Session as SessionData,
 	redirect,
 } from "react-router";
-import type { Jwt, User } from "~/client/types.gen";
+import type { JWT } from "./auth";
 
 export type ResponseOpts = { headers: Record<string, string> };
 
@@ -40,12 +40,6 @@ export default class Session {
 		return new Session(await getSession(request.headers.get("Cookie")));
 	}
 
-	static async getUserFromRequest(request: Request): Promise<User> {
-		const session = await Session.fromRequest(request);
-		const auth = session.login();
-		return auth.user;
-	}
-
 	set(key: string, val: any) {
 		this.data.set(key, val);
 	}
@@ -54,8 +48,8 @@ export default class Session {
 		return this.data.get(key);
 	}
 
-	login(): Jwt {
-		const auth = this.get(AUTH_KEY) as Jwt | undefined;
+	login(): JWT {
+		const auth = this.get(AUTH_KEY) as JWT | undefined;
 		if (
 			auth === undefined ||
 			typeof auth.access === "undefined" ||
@@ -67,8 +61,12 @@ export default class Session {
 		return auth;
 	}
 
-	async setTokens(tokens: Jwt) {
-		this.set(AUTH_KEY, tokens);
+	async setTokens(tokens: JWT) {
+		const cleanedTokens: JWT = {
+			access: tokens.access,
+			refresh: tokens.refresh,
+		};
+		this.set(AUTH_KEY, cleanedTokens);
 	}
 
 	async commit(): Promise<ResponseOpts> {

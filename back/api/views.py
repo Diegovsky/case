@@ -20,8 +20,9 @@ from api.serializers import (
     ChatMessageSerializer,
     SendMessageSerializer,
     AIUserInfo,
+    CompleteSectionSerializer,
 )
-from api.models import User, Model, Module, ChatMessage
+from api.models import User, Model, Module, ChatMessage, ModuleSection
 from api.router import ImplicitRouter
 from rest_framework import viewsets
 
@@ -96,6 +97,21 @@ class UserViewSet(CreateModelMixin, RetrieveModelMixin, UpdateModelMixin, ViewSe
             return super().get_permissions()
 
         return [permission() for permission in permission_classes]
+
+    @extend_schema(
+        request=CompleteSectionSerializer(),
+        responses={204: None},
+    )
+    @action(methods=["post"], detail=True)
+    @atomic
+    def complete_section(self, request: Request):
+        ser = CompleteSectionSerializer(data=request.data)
+        ser.is_valid(raise_exception=True)
+
+        section: ModuleSection = ser.validated_data["hashid"]
+        self.user.completed_sections.add(section)
+
+        return Response(status=204)
 
     @extend_schema(
         request=SendMessageSerializer(),

@@ -1,4 +1,6 @@
-from django.db.models import QuerySet, Q
+from django.db.models.signals import m2m_changed
+from django.dispatch import receiver
+from django.db.models import QuerySet, Q, Count, F
 from django.core.files.base import ContentFile
 from django.db.models.fields.related import ReverseOneToOneDescriptor
 from django_stubs_ext.db.models.manager import RelatedManager
@@ -65,6 +67,78 @@ class User(AbstractUser, Model):
             module__in=self.available_modules
         )
 
+    from django.db.models import Count, Q, F
+
+    def on_completed_modules_change(self):
+        # 1. Find all section IDs that SHOULD be marked complete
+        # (Sections belonging to currently completed modules)
+        desired_completed_sections = set(
+            ModuleSection.objects.filter(
+                module_id__in=self.completed_modules.values_list("id", flat=True)
+            ).values_list("id", flat=True)
+        )
+
+        # 2. Get the current state of completed sections from the database
+        current_completed_sections = set(
+            self.completed_sections.values_list("id", flat=True)
+        )
+
+        # 3. Calculate what needs to be added or removed
+        sections_to_add = desired_completed_sections - current_completed_sections
+
+        # We only remove a section if its parent module is no longer in completed_modules
+        sections_to_remove = current_completed_sections - desired_completed_sections
+
+        # 4. Apply changes only if differences exist (prevents infinite loop recursion)
+        if sections_to_add:
+            self.completed_sections.add(*sections_to_add)
+
+        if sections_to_remove:
+            # Filter to make sure we only clear sections that actually belong to the affected modules
+            # to avoid accidentally wiping out sections the user is currently working on elsewhere.
+            affected_module_sections = ModuleSection.objects.filter(
+                module_id__in=Module.objects.values_list("id", flat=True)
+            ).values_list("id", flat=True)
+
+            actual_removals = sections_to_remove & set(affected_module_sections)
+            if actual_removals:
+                self.completed_sections.remove(*actual_removals)
+
+    def on_completed_sections_change(self):
+        # 1. Fetch current completed section IDs
+        completed_section_ids = self.completed_sections.values_list("id", flat=True)
+
+        # 2. Calculate which modules SHOULD be marked complete based on the sections done
+        desired_completed_modules = set(
+            Module.objects.annotate(
+                total_sections=Count("sections"),
+                completed_count=Count(
+                    "sections", filter=Q(sections__id__in=completed_section_ids)
+                ),
+            )
+            .filter(
+                total_sections__gt=0,  # Ensure the module isn't empty
+                completed_count=F("total_sections"),  # All sections are finished
+            )
+            .values_list("id", flat=True)
+        )
+
+        # 3. Get the current state of completed modules from the database
+        current_completed_modules = set(
+            self.completed_modules.values_list("id", flat=True)
+        )
+
+        # 4. Calculate mutations
+        modules_to_add = desired_completed_modules - current_completed_modules
+        modules_to_remove = current_completed_modules - desired_completed_modules
+
+        # 5. Apply modifications safely
+        if modules_to_add:
+            self.completed_modules.add(*modules_to_add)
+
+        if modules_to_remove:
+            self.completed_modules.remove(*modules_to_remove)
+
     @override
     def save(self, **kw):
         if self.email:
@@ -116,6 +190,9 @@ class Module(UserCreatedModel):
 
     sections: "RelatedManager[ModuleSection]"
 
+    def __str__(self):
+        return f'<Module "{self.name}">'
+
     class Meta:
         ordering = ("-id",)
 
@@ -138,3 +215,21 @@ class ModuleSection(UserCreatedModel):
                 self.name = markdown.extract_title(doc)
             self.preview = markdown.as_preview(doc)
         super().save(**kw)
+
+
+# Django signal for when User.completed_sections gets changed in anyway
+# Allows us to run logic after the change is done.
+@receiver(m2m_changed, sender=User.completed_sections.through)
+def user_change_completed_sections(sender, instance: User, action: str, **kw):
+    del sender, kw
+    if action == "post_add":
+        instance.on_completed_sections_change()
+
+
+# Django signal for when User.completed_modules gets changed in anyway
+# Allows us to run logic after the change is done.
+@receiver(m2m_changed, sender=User.completed_modules.through)
+def user_change_completed_modules(sender, instance: User, action: str, **kw):
+    del sender, kw
+    if action == "post_add":
+        instance.on_completed_modules_change()

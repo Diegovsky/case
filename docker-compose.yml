@@ -1,0 +1,52 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:alpine
+    container_name: project_db
+    environment:
+      POSTGRES_DB: project_db
+      POSTGRES_USER: project_user
+      POSTGRES_PASSWORD: project_password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - project_network
+
+  back:
+    build: ./back
+    container_name: project_back
+    ports:
+      - "8000:8000"
+    environment:
+      - DB_HOST=db
+      - DB_NAME=project_db
+      - DB_USER=project_user
+      - DB_PASSWORD=project_password
+    volumes:
+      - ./back:/app
+      - ./back/media:/app/media
+    depends_on:
+      - db
+    networks:
+      - project_network
+
+  front:
+    build: ./front
+    container_name: project_front
+    ports:
+      - "5137:5137"
+    volumes:
+      - ./front:/app
+      - /app/node_modules
+    depends_on:
+      - back
+    networks:
+      - project_network
+
+networks:
+  project_network:
+    driver: bridge
+
+volumes:
+  postgres_data:
