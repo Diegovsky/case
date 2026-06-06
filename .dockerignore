@@ -4,4 +4,5 @@ node_modules
 **/media
 **/.venv
 .git
+*.sqlite3
 **/.envrc

@@ -1,24 +1,17 @@
-FROM python:3.12-slim
-
-# Install uv
+FROM alpine/curl:latest
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
-
-# Set working directory
 WORKDIR /app
 
-# Copy dependency files
 COPY pyproject.toml uv.lock ./
-
-# Install dependencies
 RUN uv sync --frozen
-
-# Copy the rest of the application
 COPY . .
 
-# Ensure the media directory exists
-RUN mkdir -p /app/media
+RUN sh -c \
+  'source .env && \
+  rm -f database/db.sqlite3 && \
+  uv run python manage.py migrate && \
+  uv run python manage.py seed'
 
-# Expose the Django port
 EXPOSE 8000
 
 # Run the development server

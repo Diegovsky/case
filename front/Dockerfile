@@ -1,21 +1,10 @@
-FROM node:22-alpine AS builder
+FROM node:22-alpine
 WORKDIR /app
 ENV CI=true
-ENV HOST=http://localhost:8000
 RUN corepack enable && corepack prepare pnpm@latest --activate
-COPY . .
 RUN pnpm config set dangerouslyAllowAllBuilds true
+COPY package.json pnpm-lock.yaml ./
 RUN pnpm install --frozen-lockfile
-RUN pnpm run build
-RUN pnpm prune --prod
-
-FROM node:22-alpine AS runtime
-WORKDIR /app
-RUN corepack enable && corepack prepare pnpm@latest --activate
-COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/build ./build
-COPY package.json ./
-
-EXPOSE 3000
-
-CMD ["pnpm", "run", "start"]
+COPY . .
+EXPOSE 5173
+CMD sh -c "pnpm run generate:api && pnpm run dev"
