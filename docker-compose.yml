@@ -11,8 +11,6 @@ services:
       - ./back/media:/app/media
       - /app/.venv
       - /app/db.sqlite3
-    depends_on:
-      - db
       
     networks:
       - project_network
