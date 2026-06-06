@@ -7,4 +7,4 @@ COPY package.json pnpm-lock.yaml ./
 RUN pnpm install --frozen-lockfile
 COPY . .
 EXPOSE 5173
-CMD sh -c "pnpm run generate:api && pnpm run dev"
+CMD sh -c "pnpm run generate:api && pnpm run dev --host"

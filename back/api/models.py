@@ -194,7 +194,7 @@ class Module(UserCreatedModel):
         return f'<Module "{self.name}">'
 
     class Meta:
-        ordering = ("-id",)
+        ordering = ("id",)
 
 
 class ModuleSection(UserCreatedModel):
