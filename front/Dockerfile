@@ -1,26 +1,21 @@
-FROM node:20-alpine AS development-dependencies-env
-RUN corepack enable && corepack prepare pnpm@latest --activate
-COPY . /app
+FROM node:22-alpine AS builder
 WORKDIR /app
+ENV CI=true
+ENV HOST=http://localhost:8000
+RUN corepack enable && corepack prepare pnpm@latest --activate
+COPY . .
+RUN pnpm config set dangerouslyAllowAllBuilds true
 RUN pnpm install --frozen-lockfile
-
-FROM node:20-alpine AS production-dependencies-env
-RUN corepack enable && corepack prepare pnpm@latest --activate
-COPY ./package.json pnpm-lock.yaml /app/
-WORKDIR /app
-RUN pnpm install --frozen-lockfile --prod
-
-FROM node:20-alpine AS build-env
-RUN corepack enable && corepack prepare pnpm@latest --activate
-COPY . /app/
-COPY --from=development-dependencies-env /app/node_modules /app/node_modules
-WORKDIR /app
 RUN pnpm run build
+RUN pnpm prune --prod
 
-FROM node:20-alpine
-RUN corepack enable && corepack prepare pnpm@latest --activate
-COPY ./package.json pnpm-lock.yaml /app/
-COPY --from=production-dependencies-env /app/node_modules /app/node_modules
-COPY --from=build-env /app/build /app/build
+FROM node:22-alpine AS runtime
 WORKDIR /app
+RUN corepack enable && corepack prepare pnpm@latest --activate
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/build ./build
+COPY package.json ./
+
+EXPOSE 3000
+
 CMD ["pnpm", "run", "start"]

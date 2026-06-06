@@ -13,7 +13,7 @@ class AIClient:
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
+        self.client = genai.Client(api_key=os.environ["GEMINI_API_KEY"])
 
     def call_model(
         self,
