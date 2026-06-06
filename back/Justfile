@@ -11,8 +11,14 @@ migrate *args:
 seed *args:
     python manage.py seed {{args}}
 
+remigrate:
+    rm -rf api/migrations
+    just makemigrations api
+    just makemigrations
+    just redb
+
 redb:
-    rm db.sqlite3
+    rm -f db.sqlite3
     just migrate
     just seed
     

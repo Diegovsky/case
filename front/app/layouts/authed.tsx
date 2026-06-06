@@ -1,26 +1,32 @@
 import { setupClient } from "~/auth";
-import Session from "~/session.server";
+import Session from "~/session";
 import type { Jwt, User } from "~/client";
 import type { Route } from "./+types/authed";
 import { AppProvider } from "~/context";
-import { Outlet } from "react-router";
+import { createContext, Outlet, type MiddlewareFunction } from "react-router";
 
-export async function loader({ request }: Route.LoaderArgs): Promise<Jwt> {
+export const jwtContext = createContext<Jwt>();
+
+const authMiddleware: MiddlewareFunction = async (
+	{ request, context },
+	next,
+) => {
 	const ses = await Session.fromRequest(request);
 	const jwt = ses.login();
+	setupClient(jwt);
+	context.set(jwtContext, jwt);
+	return await next();
+};
 
-	return jwt;
-}
+export const middleware = [authMiddleware];
+
+export const loader = async ({ context }: Route.LoaderArgs) => {
+	return context.get(jwtContext);
+};
 
 export default function AuthedComponent({
 	loaderData: jwt,
 }: Route.ComponentProps) {
-	// guarantees both client and server have HTTP client setup.
-	// yes it is weird but works, and middlewares are not yet stable, so...
 	setupClient(jwt);
-	return (
-		<AppProvider app={{ user: jwt.user }}>
-			<Outlet />
-		</AppProvider>
-	);
+	return <Outlet />;
 }

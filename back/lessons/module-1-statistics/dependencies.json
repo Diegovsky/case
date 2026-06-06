@@ -1,0 +1,7 @@
+{
+  "arithmetic-mean.md": [],
+  "median.md": [],
+  "mode.md": [],
+  "range.md": [],
+  "variance-sd.md": ["arithmetic-mean.md"]
+}

@@ -1,12 +1,14 @@
+from django.db.models import QuerySet, Q
+from django.core.files.base import ContentFile
 from django.db.models.fields.related import ReverseOneToOneDescriptor
 from django_stubs_ext.db.models.manager import RelatedManager
-from re import compile
+from api import markdown
 from django.utils.text import slugify
 from pathlib import Path
 from django_pydantic_field import SchemaField
 from django.utils.translation.trans_null import _
-from django.contrib.auth.hashers import is_password_usable, identify_hasher
-from typing import override, Self, Iterable
+from django.contrib.auth.hashers import identify_hasher
+from typing import override, Iterable
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django_hashids import HashidsField
@@ -46,7 +48,22 @@ class User(AbstractUser, Model):
 
     # Override to make 'email' not blank
     email = models.EmailField(_("email address"), unique=True)
-    progress: "ReverseOneToOneDescriptor[User, UserProgress]"
+    interests: list[str] = SchemaField(default=list)
+    messages: "RelatedManager[ChatMessage]"
+    completed_sections = models.ManyToManyField("ModuleSection", related_name=None)
+    completed_modules = models.ManyToManyField("Module", related_name=None)
+
+    @property
+    def available_modules(self) -> "QuerySet[Module]":
+        missing = Module.objects.exclude(id__in=self.completed_modules.all())
+        return Module.objects.exclude(dependencies__in=missing)
+
+    @property
+    def available_sections(self) -> "QuerySet[ModuleSection]":
+        missing = ModuleSection.objects.exclude(id__in=self.completed_sections.all())
+        return ModuleSection.objects.exclude(dependencies__in=missing).filter(
+            module__in=self.available_modules
+        )
 
     @override
     def save(self, **kw):
@@ -61,34 +78,49 @@ class User(AbstractUser, Model):
         super().save(**kw)
 
 
-class UserProgress(Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="progress")
-    interests: list[str] = SchemaField(default=list)
+class ChatMessage(Model):
+    class Sender(models.TextChoices):
+        USER = "user"
+        MODEL = "model"
+
+    text = models.TextField()
+    sender = models.CharField(max_length=5, choices=Sender)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="messages")
+
+    def __str__(self):
+        return f'{self.sender}: "{self.text}"'
+
+    class Meta:
+        ordering = ("created_at",)
 
 
-class Module(Model):
-    name = models.CharField(
-        max_length=128,
-        unique=True,
-    )
+class UserCreatedModel(Model):
+    created_by = models.ForeignKey(User, related_name=None, on_delete=models.CASCADE)
 
-    sections: "RelatedManager[ModuleSection]"
+    class Meta:
+        abstract = True
 
 
 def get_upload_path(instance: "ModuleSection", filename: str):
     module_name = slugify(instance.module.name)
     section_name = slugify(instance.name)
-    return str(Path(f"module/{module_name}/section/{section_name}/{filename}"))
+    return str(Path(f"media/module/{module_name}/section/{section_name}/content.md"))
 
 
-def extract_title(text: Iterable[str]) -> str | None:
-    reg = compile(r"^# (.+)$")
-    for x in text:
-        if match := reg.match(x):
-            return match.group(1)
+class Module(UserCreatedModel):
+    name = models.CharField(
+        max_length=128,
+        unique=True,
+    )
+    dependencies = models.ManyToManyField("self", symmetrical=False)
+
+    sections: "RelatedManager[ModuleSection]"
+
+    class Meta:
+        ordering = ("-id",)
 
 
-class ModuleSection(Model):
+class ModuleSection(UserCreatedModel):
     module = models.ForeignKey(
         Module, on_delete=models.CASCADE, related_name="sections"
     )
@@ -96,8 +128,13 @@ class ModuleSection(Model):
         max_length=128,
     )
     content = models.FileField(upload_to=get_upload_path)
+    preview = models.CharField(max_length=54)
+    dependencies = models.ManyToManyField("self", symmetrical=False)
 
     def save(self, **kw):
         with self.content.open("r") as f:
-            self.name = extract_title(f)
+            doc = markdown.parse(f.read())
+            if not self.name:
+                self.name = markdown.extract_title(doc)
+            self.preview = markdown.as_preview(doc)
         super().save(**kw)

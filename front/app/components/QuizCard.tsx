@@ -52,6 +52,7 @@ export default function QuizCard({
 						onClick={() => {
 							if (onSubmit) {
 								onSubmit(selectedOption);
+								setSelectedOption(0);
 							}
 						}}
 						size="large"

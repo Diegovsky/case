@@ -1,4 +1,4 @@
-# Pie Charts (Sector Graphs)
+# Pie Charts
 
 Pie charts represent "parts of a whole." They are essentially circles divided into slices.
 

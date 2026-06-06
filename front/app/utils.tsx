@@ -1,4 +1,4 @@
-import type { SetStateAction } from "react";
+import type { ChangeEventHandler, SetStateAction } from "react";
 
 export type SetState<T> = React.Dispatch<SetStateAction<T>>;
 
@@ -13,6 +13,23 @@ export class Hook<T> {
 	partial(value: T): () => void {
 		const set = this.set;
 		return () => set(value);
+	}
+
+	onChange(): (e: InputEvent | ChangeEventHandler) => void {
+		const set = this.set;
+		return (e) => set(e.target.value);
+	}
+}
+
+export class HookedArray<T> extends Hook<Array<T>> {
+	append(val: T) {
+		this.set((current) => [...current, val]);
+	}
+	extend(val: Array<T>) {
+		this.set((current) => [...current, ...val]);
+	}
+	removeFilter(filter: (val: T, i?: number) => boolean) {
+		this.set((current) => current.filter(filter));
 	}
 }
 

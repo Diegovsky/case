@@ -64,7 +64,6 @@ export default class Session {
 			console.log("redirecting to log in");
 			throw redirect("/login");
 		}
-		console.log("AUTH INFO:", auth);
 		return auth;
 	}
 

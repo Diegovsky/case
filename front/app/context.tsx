@@ -1,8 +1,10 @@
-import { createContext, type ReactNode, useContext } from "react";
+import { createContext, type ReactNode, useContext, type Ref } from "react";
 import type { User } from "~/client/types.gen";
+import type { Hook } from "./utils";
 
 export interface App {
 	user: User;
+	aiContext: string | object;
 }
 
 const AppContext = createContext<App | null>(null);

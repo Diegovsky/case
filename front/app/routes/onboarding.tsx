@@ -60,7 +60,7 @@ export default function Onboarding({}: Route.ComponentProps) {
 			};
 			handleResponse(
 				await userMePartialUpdate({
-					body: { progress: data },
+					body: data,
 				}),
 			);
 			navigate("/");

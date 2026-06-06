@@ -10,8 +10,8 @@ $$P(A|B) = \frac{P(A \cap B)}{P(B)}$$
 
 ## Example
 In a class, 60% of students like Math, and 30% like both Math and Physics. If we pick a student who **already likes Math**, what is the probability they also like Physics?
-- $P(	ext{Likes Math}) = 0.60$ (This is our new total)
-- $P(	ext{Likes Both}) = 0.30$
-- $P(	ext{Physics} | 	ext{Math}) = \frac{0.30}{0.60} = 0.5$ or $50\%$
+- $P(	\text{Likes Math}) = 0.60$ (This is our new total)
+- $P(	\text{Likes Both}) = 0.30$
+- $P(	\text{Physics} | 	\text{Math}) = \frac{0.30}{0.60} = 0.5$ or $50\%$
 
 💡 **ENEM Tip:** Look for phrases like "given that...", "knowing that...", or "among those who...". This indicates a conditional probability.

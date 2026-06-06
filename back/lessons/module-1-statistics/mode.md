@@ -1,4 +1,4 @@
-# Mode (Moda)
+# Mode
 
 The mode is the simplest measure of central tendency. It is the value that appears most frequently in a dataset.
 

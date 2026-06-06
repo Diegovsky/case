@@ -7,6 +7,7 @@ function goToLogin(): never {
 	console.log("Unauth: login NOW");
 	throw redirect("/login");
 }
+
 async function refresh(user: Jwt) {
 	const data = await authTokenRefreshCreate({
 		body: user,
@@ -19,15 +20,18 @@ async function refresh(user: Jwt) {
 	if (tokens.refresh) user.refresh = tokens.refresh;
 }
 
-async function expiredMiddleware(user: Jwt, resp: Response, req: Request) {
-	if (resp.status === 401) {
+async function expiredMiddleware(
+	jwt: Jwt | null,
+	resp: Response,
+	req: Request,
+) {
+	if (resp.status === 401 && jwt) {
 		const respBody = await resp.clone().json();
-		console.log({ url: req.url, code: resp.status });
 		if (respBody.code === "token_not_valid" && !req.url.includes("auth")) {
 			console.log("re-authing");
 
-			await refresh(user);
-			req.headers.set("Authorization", `Bearer ${user.access}`);
+			await refresh(jwt);
+			req.headers.set("Authorization", `Bearer ${jwt.access}`);
 			const refreshReq = new Request(req);
 
 			resp = await fetch(refreshReq);
@@ -39,18 +43,24 @@ async function expiredMiddleware(user: Jwt, resp: Response, req: Request) {
 	return resp;
 }
 
-export function setupClient(user: Jwt) {
-	if (!user)
+const state: { jwt: Jwt | null } = {
+	jwt: null,
+};
+
+client.interceptors.response.use(async (resp, req) =>
+	expiredMiddleware(state.jwt, resp, req),
+);
+client.setConfig({
+	auth: () => state.jwt?.access,
+	throwOnError: true,
+	fetch: async (req, opts) =>
+		await fetch(req instanceof Request ? req.clone() : req, opts),
+});
+
+export function setupClient(jwt: Jwt) {
+	if (!jwt)
 		throw new Error(
 			"User authentication data is required to setup the client.",
 		);
-	client.interceptors.response.use(async (resp, req) =>
-		expiredMiddleware(user, resp, req),
-	);
-	client.setConfig({
-		auth: () => user.access,
-		throwOnError: true,
-		fetch: async (req, opts) =>
-			await fetch(req instanceof Request ? req.clone() : req, opts),
-	});
+	state.jwt = jwt;
 }

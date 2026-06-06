@@ -2,6 +2,12 @@
   
 }
 
+pre, p {
+  white-space: pre-wrap;       /* Leaves spaces, but wraps text naturally */
+  word-wrap: break-word;       /* Legacy support for older browsers */
+  overflow-wrap: break-word;   /* Forces long strings (like URLs) to break */
+}
+
 .scroll-container {
   height: 100%;
   width: 100%;

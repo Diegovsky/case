@@ -11,7 +11,7 @@ export default [
 		route("onboarding", "routes/onboarding.tsx"),
 		layout("layouts/basic.tsx", [
 			index("routes/home.tsx"),
-			route("topics", "routes/topics.tsx"),
+			route("topics/:hashid", "routes/topics.tsx"),
 		]),
 	]),
 ] satisfies RouteConfig;

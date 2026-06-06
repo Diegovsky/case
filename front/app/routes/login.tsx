@@ -9,7 +9,7 @@ import {
 import { useState } from "react";
 import { data, Form, redirect } from "react-router";
 import { authLoginCreate, userCreate } from "~/client";
-import Session from "~/session.server";
+import Session from "~/session";
 import { handleResponse } from "~/utils";
 import type { Route } from "./+types/login";
 
@@ -36,10 +36,9 @@ export async function action({ request }: Route.ActionArgs) {
 			}),
 		);
 		session.setTokens(jwt);
-		console.log(jwt.user);
 
 		// go to /onboarding if progress is undefined/null
-		const route = !jwt.user.progress ? "/onboarding" : "/";
+		const route = !jwt.user.interests ? "/onboarding" : "/";
 		throw redirect(route, await session.commit());
 	}
 }
@@ -92,6 +91,7 @@ export default function Login({}: Route.ComponentProps) {
 						</>
 					)}
 					<TextField
+						value="admin@email.com"
 						name="email"
 						label="Email"
 						fullWidth
@@ -99,6 +99,7 @@ export default function Login({}: Route.ComponentProps) {
 						type="email"
 					/>
 					<TextField
+						value="admin"
 						name="password"
 						label="Password"
 						fullWidth
