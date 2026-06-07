@@ -15,7 +15,7 @@ export class Hook<T> {
 		return () => set(value);
 	}
 
-	onChange(): (e: InputEvent | ChangeEventHandler) => void {
+	onChange(): (e: { target: { value: T } }) => void {
 		const set = this.set;
 		return (e) => set(e.target.value);
 	}
@@ -37,7 +37,15 @@ export const fadeVisibility = {
 	transition: "opacity 0.2s",
 };
 
-export function handleResponse<T extends {}>(
+export function tryCatch<T>(cb: () => T, fallback: T): T {
+	try {
+		return cb();
+	} catch {
+		return fallback;
+	}
+}
+
+export function handleResponse<T extends {} | unknown>(
 	val:
 		| { data: T | undefined; error: undefined }
 		| { data: undefined; error: unknown },

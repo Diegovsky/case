@@ -8,9 +8,9 @@ import {
 export default [
 	route("login", "routes/login.tsx"),
 	layout("layouts/authed.tsx", [
-		route("onboarding", "routes/onboarding.tsx"),
 		layout("layouts/basic.tsx", [
 			index("routes/home.tsx"),
+			route("tests", "routes/tests.tsx"),
 			route("topics/:hashid", "routes/topics.tsx"),
 		]),
 	]),

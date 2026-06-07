@@ -1,0 +1,483 @@
+[
+  {
+    "topic": "arithmetic-mean",
+    "context": "The table shows the quantity of a specific medication sold by a pharmacy during the first five days of a week.\n- Monday: 30\n- Tuesday: 20\n- Wednesday: 25\n- Thursday: 15\n- Friday: 10",
+    "question": "What was the daily arithmetic mean of medications sold in this five-day period?",
+    "alternatives": [
+      {
+        "letter": "A",
+        "text": "10",
+        "file": null,
+        "is_correct": false
+      },
+      {
+        "letter": "B",
+        "text": "15",
+        "file": null,
+        "is_correct": false
+      },
+      {
+        "letter": "C",
+        "text": "20",
+        "file": null,
+        "is_correct": true
+      },
+      {
+        "letter": "D",
+        "text": "25",
+        "file": null,
+        "is_correct": false
+      },
+      {
+        "letter": "E",
+        "text": "30",
+        "file": null,
+        "is_correct": false
+      }
+    ]
+  },
+  {
+    "topic": "bar-column-charts",
+    "context": "A student analyzed a column chart showing the progression of grain exports by an agricultural cooperative over five years (2018 to 2022). The chart indicated the following values in tons:\n- 2018: 120 t\n- 2019: 150 t\n- 2020: 90 t\n- 2021: 180 t\n- 2022: 210 t",
+    "question": "Based on the behavior of the columns in the chart, in which year was the largest percentage drop in grain exports compared to the previous year?",
+    "alternatives": [
+      {
+        "letter": "A",
+        "text": "2019",
+        "file": null,
+        "is_correct": false
+      },
+      {
+        "letter": "B",
+        "text": "2020",
+        "file": null,
+        "is_correct": true
+      },
+      {
+        "letter": "C",
+        "text": "2021",
+        "file": null,
+        "is_correct": false
+      },
+      {
+        "letter": "D",
+        "text": "2022",
+        "file": null,
+        "is_correct": false
+      },
+      {
+        "letter": "E",
+        "text": "None of the years showed a drop.",
+        "file": null,
+        "is_correct": false
+      }
+    ]
+  },
+  {
+    "topic": "conditional-probability",
+    "context": "A company conducted a medical screening on its 100 employees to detect visual asymmetry. It is known that 60 employees are men and 40 are women. Among the men, 6 present the asymmetry, while only 2 women present the same condition.",
+    "question": "If an employee from this company is selected at random and found to have visual asymmetry, what is the probability that this employee is a woman?",
+    "alternatives": [
+      {
+        "letter": "A",
+        "text": "5%",
+        "file": null,
+        "is_correct": false
+      },
+      {
+        "letter": "B",
+        "text": "20%",
+        "file": null,
+        "is_correct": false
+      },
+      {
+        "letter": "C",
+        "text": "25%",
+        "file": null,
+        "is_correct": true
+      },
+      {
+        "letter": "D",
+        "text": "40%",
+        "file": null,
+        "is_correct": false
+      },
+      {
+        "letter": "E",
+        "text": "50%",
+        "file": null,
+        "is_correct": false
+      }
+    ]
+  },
+  {
+    "topic": "independent-events",
+    "context": "Two fair dice of different colors, one white and one black, are rolled simultaneously on a table. The outcome of each die does not affect the outcome of the other.",
+    "question": "What is the probability of obtaining the number 5 on the white die and an even number on the black die?",
+    "alternatives": [
+      {
+        "letter": "A",
+        "text": "1/12",
+        "file": null,
+        "is_correct": true
+      },
+      {
+        "letter": "B",
+        "text": "1/6",
+        "file": null,
+        "is_correct": false
+      },
+      {
+        "letter": "C",
+        "text": "1/4",
+        "file": null,
+        "is_correct": false
+      },
+      {
+        "letter": "D",
+        "text": "1/2",
+        "file": null,
+        "is_correct": false
+      },
+      {
+        "letter": "E",
+        "text": "2/3",
+        "file": null,
+        "is_correct": false
+      }
+    ]
+  },
+  {
+    "topic": "line-graphs",
+    "context": "The line graph below represents the net profit (in thousands of Brazilian reais) of a technology startup during the first six months of operation in a given year:\n- Jan: 10\n- Feb: 15\n- Mar: 5\n- Apr: 20\n- May: 30\n- Jun: 25",
+    "question": "Analyzing the line graph, the largest absolute increase in net profit between two consecutive months occurred from:",
+    "alternatives": [
+      {
+        "letter": "A",
+        "text": "January to February.",
+        "file": null,
+        "is_correct": false
+      },
+      {
+        "letter": "B",
+        "text": "February to March.",
+        "file": null,
+        "is_correct": false
+      },
+      {
+        "letter": "C",
+        "text": "March to April.",
+        "file": null,
+        "is_correct": true
+      },
+      {
+        "letter": "D",
+        "text": "April to May.",
+        "file": null,
+        "is_correct": false
+      },
+      {
+        "letter": "E",
+        "text": "May to June.",
+        "file": null,
+        "is_correct": false
+      }
+    ]
+  },
+  {
+    "topic": "median",
+    "context": "During a tryout for a school basketball team, the heights (in meters) of 7 candidate students were recorded: 1.75, 1.82, 1.70, 1.88, 1.85, 1.78, 1.90.",
+    "question": "What is the median height of these candidates?",
+    "alternatives": [
+      {
+        "letter": "A",
+        "text": "1.70 m",
+        "file": null,
+        "is_correct": false
+      },
+      {
+        "letter": "B",
+        "text": "1.78 m",
+        "file": null,
+        "is_correct": false
+      },
+      {
+        "letter": "C",
+        "text": "1.82 m",
+        "file": null,
+        "is_correct": true
+      },
+      {
+        "letter": "D",
+        "text": "1.85 m",
+        "file": null,
+        "is_correct": false
+      },
+      {
+        "letter": "E",
+        "text": "1.88 m",
+        "file": null,
+        "is_correct": false
+      }
+    ]
+  },
+  {
+    "topic": "mode",
+    "context": "A shoe store recorded the sizes of men's shoes sold during the first two hours of operation on a Saturday: 40, 41, 42, 40, 39, 40, 43, 41, 40, 42.",
+    "question": "Determine the mode of the shoe sizes sold during this period.",
+    "alternatives": [
+      {
+        "letter": "A",
+        "text": "39",
+        "file": null,
+        "is_correct": false
+      },
+      {
+        "letter": "B",
+        "text": "40",
+        "file": null,
+        "is_correct": true
+      },
+      {
+        "letter": "C",
+        "text": "41",
+        "file": null,
+        "is_correct": false
+      },
+      {
+        "letter": "D",
+        "text": "42",
+        "file": null,
+        "is_correct": false
+      },
+      {
+        "letter": "E",
+        "text": "43",
+        "file": null,
+        "is_correct": false
+      }
+    ]
+  },
+  {
+    "topic": "mutually-exclusive",
+    "context": "A box contains tokens numbered from 1 to 20. One token will be drawn at random. Consider the following events:\n- Event A: the drawn token is a multiple of 7.\n- Event B: the drawn token is a multiple of 9.",
+    "question": "Knowing that events A and B are mutually exclusive, what is the probability that the drawn token is a multiple of 7 OR a multiple of 9?",
+    "alternatives": [
+      {
+        "letter": "A",
+        "text": "1/20",
+        "file": null,
+        "is_correct": false
+      },
+      {
+        "letter": "B",
+        "text": "2/20",
+        "file": null,
+        "is_correct": false
+      },
+      {
+        "letter": "C",
+        "text": "3/20",
+        "file": null,
+        "is_correct": false
+      },
+      {
+        "letter": "D",
+        "text": "4/20",
+        "file": null,
+        "is_correct": true
+      },
+      {
+        "letter": "E",
+        "text": "5/20",
+        "file": null,
+        "is_correct": false
+      }
+    ]
+  },
+  {
+    "topic": "pie-charts",
+    "context": "A pie chart illustrates the distribution of waste types collected on a beach:\n- Plastic: 50%\n- Glass: 25%\n- Metal: 15%\n- Paper: 10%\n\nThe total waste collected was 400 kg.",
+    "question": "How many kilograms of Metal waste were collected on this beach?",
+    "alternatives": [
+      {
+        "letter": "A",
+        "text": "40 kg",
+        "file": null,
+        "is_correct": false
+      },
+      {
+        "letter": "B",
+        "text": "60 kg",
+        "file": null,
+        "is_correct": true
+      },
+      {
+        "letter": "C",
+        "text": "100 kg",
+        "file": null,
+        "is_correct": false
+      },
+      {
+        "letter": "D",
+        "text": "150 kg",
+        "file": null,
+        "is_correct": false
+      },
+      {
+        "letter": "E",
+        "text": "200 kg",
+        "file": null,
+        "is_correct": false
+      }
+    ]
+  },
+  {
+    "topic": "range",
+    "context": "The daily maximum temperatures recorded in a coastal city during a week were: 28°C, 31°C, 26°C, 35°C, 30°C, 29°C, and 32°C.",
+    "question": "What is the temperature range observed during this week?",
+    "alternatives": [
+      {
+        "letter": "A",
+        "text": "5°C",
+        "file": null,
+        "is_correct": false
+      },
+      {
+        "letter": "B",
+        "text": "7°C",
+        "file": null,
+        "is_correct": false
+      },
+      {
+        "letter": "C",
+        "text": "9°C",
+        "file": null,
+        "is_correct": true
+      },
+      {
+        "letter": "D",
+        "text": "11°C",
+        "file": null,
+        "is_correct": false
+      },
+      {
+        "letter": "E",
+        "text": "15°C",
+        "file": null,
+        "is_correct": false
+      }
+    ]
+  },
+  {
+    "topic": "simple-probability",
+    "context": "A box contains 12 green balls, 8 red balls, and 10 blue balls, all of the same size and mass. A ball is drawn from the box at random.",
+    "question": "What is the probability that the drawn ball is not red?",
+    "alternatives": [
+      {
+        "letter": "A",
+        "text": "4/15",
+        "file": null,
+        "is_correct": false
+      },
+      {
+        "letter": "B",
+        "text": "2/5",
+        "file": null,
+        "is_correct": false
+      },
+      {
+        "letter": "C",
+        "text": "1/2",
+        "file": null,
+        "is_correct": false
+      },
+      {
+        "letter": "D",
+        "text": "11/15",
+        "file": null,
+        "is_correct": true
+      },
+      {
+        "letter": "E",
+        "text": "4/5",
+        "file": null,
+        "is_correct": false
+      }
+    ]
+  },
+  {
+    "topic": "table-analysis",
+    "context": "A farmer wants to determine the best time to plant a seed that requires a significant amount of water during the first two months after planting. He obtained the monthly rainfall forecast index (ImPC) for the region for the period:\n- October: 250 mm\n- November: 150 mm\n- December: 300 mm\n- January: 400 mm\n- February: 100 mm\n- March: 80 mm",
+    "question": "If the farmer wishes to choose the consecutive two-month period with the highest total accumulated rainfall for the early growth of the plant, at the beginning of which month should he plant?",
+    "alternatives": [
+      {
+        "letter": "A",
+        "text": "October",
+        "file": null,
+        "is_correct": false
+      },
+      {
+        "letter": "B",
+        "text": "November",
+        "file": null,
+        "is_correct": false
+      },
+      {
+        "letter": "C",
+        "text": "December",
+        "file": null,
+        "is_correct": true
+      },
+      {
+        "letter": "D",
+        "text": "January",
+        "file": null,
+        "is_correct": false
+      },
+      {
+        "letter": "E",
+        "text": "February",
+        "file": null,
+        "is_correct": false
+      }
+    ]
+  },
+  {
+    "topic": "variance-sd",
+    "context": "Two athletes, X and Y, competed in five rounds of a target shooting tournament. Both achieved exactly the same arithmetic mean score at the end of the five rounds. However, athlete X had a standard deviation of 1.2 points, while athlete Y had a standard deviation of 3.5 points.",
+    "question": "Based on this statistical dispersion data, what can be concluded about the athletes' performance?",
+    "alternatives": [
+      {
+        "letter": "A",
+        "text": "Athlete Y was more consistent than athlete X.",
+        "file": null,
+        "is_correct": false
+      },
+      {
+        "letter": "B",
+        "text": "Athlete X demonstrated greater stability and consistency in their scores.",
+        "file": null,
+        "is_correct": true
+      },
+      {
+        "letter": "C",
+        "text": "The variance of athlete X's scores is greater than that of athlete Y.",
+        "file": null,
+        "is_correct": false
+      },
+      {
+        "letter": "D",
+        "text": "Athlete Y won the competition because they had a higher standard deviation.",
+        "file": null,
+        "is_correct": false
+      },
+      {
+        "letter": "E",
+        "text": "It is not possible to compare the consistency of the athletes without knowing the score of each individual round.",
+        "file": null,
+        "is_correct": false
+      }
+    ]
+  }
+]

@@ -19,7 +19,7 @@ import { fadeVisibility, type Hook } from "~/utils";
 const DRAWER_WIDTH = 240;
 const COLLAPSED_WIDTH = 60;
 
-const sections = [{ label: "Learn", icon: <MessageSquare />, link: "/" }];
+const topics = [{ label: "Learn", icon: <MessageSquare />, link: "/" }];
 
 export default function AppDrawer({ open }: { open: Hook<boolean> }) {
 	const fadeOnClose = {
@@ -63,7 +63,7 @@ export default function AppDrawer({ open }: { open: Hook<boolean> }) {
 			</Toolbar>
 			<Divider />
 			<List sx={{ py: 0 }}>
-				{sections.map(({ label, icon, link }) => (
+				{topics.map(({ label, icon, link }) => (
 					<ListItem key={label} disablePadding>
 						<ListItemButton
 							component={NavLink}

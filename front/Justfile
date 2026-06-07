@@ -3,6 +3,7 @@ run *args:
     pnpm run dev {{args}}
 
 gen *args:
+    rm -rf app/client
     pnpm run generate:api {{args}}
 
 run-all:

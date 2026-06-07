@@ -19,8 +19,9 @@ class AIClient:
         self,
         messages: types.ContentListUnionDict,
         /,
-        model="gemma-4-31b-it",
-        config: Config = Config(),
+        model="gemini-3.1-flash-lite",
+        # model="gemma-4-31b-it",
+        config: Config = Config(max_output_tokens=3072),
     ) -> dict:
         assert len(messages) > 0
         config.response_mime_type = "application/json"
@@ -30,6 +31,8 @@ class AIClient:
                 completion = self.client.models.generate_content(
                     model=model, contents=messages, config=config
                 )
+                if completion.text == "...":
+                    continue
                 print(f'"{completion.text}"')
                 assert completion.text
                 return json.loads(completion.text)

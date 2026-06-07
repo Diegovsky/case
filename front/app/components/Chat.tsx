@@ -1,44 +1,55 @@
 import {
-	Box,
-	TextField,
-	IconButton,
-	type BoxProps,
-	Toolbar,
 	AppBar,
-	Typography,
-	Paper,
+	Box,
+	type BoxProps,
 	CircularProgress,
+	IconButton,
+	Paper,
+	TextField,
+	Toolbar,
 } from "@mui/material";
 import { Send } from "lucide-react";
 import { useEffect, useRef, useState, useTransition } from "react";
-import { userMeSendMessageCreate, type ChatMessage } from "~/client";
-import { handleResponse, Hook, HookedArray } from "~/utils";
-import InnerMarkdown from "./InnerMarkdown";
+import {
+	type ChatMessage,
+	userMeSendMessageCreate,
+	userMeRetrieve,
+} from "~/client";
 import { useApp } from "~/context";
+import { Hook, HookedArray, handleResponse } from "~/utils";
+import InnerMarkdown from "./InnerMarkdown";
 
 export type ChatSender = "User" | "AI";
 
 interface ChatProps extends BoxProps {
-	messages: ChatMessage[];
+	initialMessages?: ChatMessage[];
+	onExtraInfo?: (info: {
+		updatedInfo: boolean;
+		[key: string]: unknown;
+	}) => void;
 }
 
 export default function Chat({
-	messages: initialMessages,
 	sx,
+	onExtraInfo,
+	initialMessages,
 	...props
 }: ChatProps) {
 	const app = useApp();
-	const messages = new HookedArray(useState(initialMessages));
+	const messages = new HookedArray(
+		useState(initialMessages || app.user.messages),
+	);
 	const currentMessage = new Hook(useState(""));
 	const [isPending, startTransition] = useTransition();
 
-	const anchorRef = useRef<HTMLElement>(null);
+	const anchorRef = useRef<HTMLDivElement | null>(null);
 
 	const scrollWindow = () => {
 		if (!anchorRef) return;
 		anchorRef.current?.scrollIntoView({ behavior: "smooth" });
 	};
 
+	// biome-ignore lint/correctness/useExhaustiveDependencies:.
 	useEffect(scrollWindow, [anchorRef, messages.value, isPending]);
 
 	const sendMessage = () => {
@@ -54,9 +65,14 @@ export default function Chat({
 		messages.append(newMsg);
 
 		startTransition(async () => {
-			const newMsgs = handleResponse(
+			const {
+				messages: newMessages,
+				updated_info,
+				extra,
+			} = handleResponse(
 				await userMeSendMessageCreate({
 					body: {
+						sender: "user",
 						text: currentMessage.value,
 						context: JSON.stringify(app.aiContext),
 					},
@@ -64,8 +80,15 @@ export default function Chat({
 			);
 			messages.set((messages) => [
 				...messages.filter((msg) => msg.hashid !== "pending"),
-				...newMsgs,
+				...newMessages,
 			]);
+			console.log({ updated_info, extra, messages });
+			app.isReadOnly.set(false);
+			if (
+				onExtraInfo &&
+				(updated_info || Object.keys(extra as object).length > 0)
+			)
+				onExtraInfo({ updated_info, ...(extra as any) });
 		});
 	};
 	return (
@@ -84,7 +107,7 @@ export default function Chat({
 				className="scroll-container"
 				sx={{ gap: 2, p: 2, display: "flex", flexDirection: "column" }}
 			>
-				{messages.value.map((m, i) => {
+				{messages.value.map((m) => {
 					const isUser = m.sender === "user";
 					return (
 						<Paper
@@ -116,7 +139,7 @@ export default function Chat({
 			<Box
 				sx={{
 					bgcolor: "background.paper",
-					justifySelf: "flex",
+					justifySelf: "flex-end",
 					borderTop: 1,
 					p: 2,
 					display: "flex",

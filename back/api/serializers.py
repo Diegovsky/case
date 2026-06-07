@@ -1,20 +1,21 @@
+from api.other_serializers import HashIdDictSerializer
 from rest_framework.serializers import Serializer
 from rest_framework.fields import SerializerMethodField
 from django.contrib.auth.models import AnonymousUser
 from rest_framework.request import Request
-from typing import Any, override
-from api.models import User, Module, ModuleSection, ChatMessage
+from typing import Any, overload
+from api.models import User, Module, Topic, ChatMessage, Test
 from rest_framework import serializers
 
-from django_pydantic_field.fields import PydanticSchemaField as ModelSchemaField
-from django_pydantic_field.rest_framework import SchemaField as PydanticSchemaField
-from drf_spectacular.drainage import set_override
+# from django_pydantic_field.rest_framework import SchemaField as PydanticSchemaField
+from django_pydantic_field.v2.rest_framework import SchemaField
+# from drf_spectacular.drainage import set_override
 
 
-class SchemaField(PydanticSchemaField):
-    def __init__(self, schema, **kwargs):
-        set_override(self, "field", schema)
-        super().__init__(schema=schema, **kwargs)
+# class SchemaField(PydanticSchemaField):
+#     def __init__(self, schema, **kwargs):
+#         set_override(self, "field", schema)
+#         super().__init__(schema=schema, **kwargs)
 
 
 class MetaMeta(type):
@@ -48,11 +49,26 @@ class HashidField(serializers.SlugRelatedField):
             queryset.model, "hashid"
         ):
             slug_field = "hashid"
-        super().__init__(slug_field, **kwargs)
+        kwargs["slug_field"] = slug_field
+        super().__init__(**kwargs)
 
 
 class ModelSerializer(serializers.ModelSerializer):
     serializer_related_field = HashidField
+
+    @overload
+    def __init__(self, *a, many_dict=bool, **kw): ...
+    @overload
+    def __init__(self, *a, **kw): ...
+
+    def __init__(self, *a, **kw):
+        return super().__init__(*a, **kw)
+
+    def __new__(cls, *a, **kw):
+        many_dict = kw.pop("many_dict", False)
+        if many_dict:
+            return HashIdDictSerializer.many_init(cls, *a, **kw)
+        return super().__new__(cls, *a, **kw)
 
     @property
     def request(self) -> Request:
@@ -83,42 +99,50 @@ class ChatMessageSerializer(ModelSerializer):
     class Meta(Meta):
         model = ChatMessage
         exclude = ["user"]
-        extra_kwargs = {"sender": {"read_only": True}}
 
 
-class ModuleSectionSerializer(ModelSerializer):
+class TopicSerializer(ModelSerializer):
     content = SerializerMethodField()
+    tests = SchemaField(list[Test])
+    module = SerializerMethodField()
 
-    def get_content(self, instance: ModuleSection) -> str:
+    def get_module(self, instance: Topic) -> str:
+        return instance.module.hashid
+
+    def get_content(self, instance: Topic) -> str:
         return instance.content.read()
 
     class Meta(Meta):
-        model = ModuleSection
-        exclude = ["module"]
+        list_serializer_class = HashIdDictSerializer
+        model = Topic
 
 
-class BriefModuleSectionSerializer(ModelSerializer):
+class BriefTopicSerializer(ModelSerializer):
     class Meta(Meta):
-        model = ModuleSection
-        exclude = ["module", "content"]
+        model = Topic
+        exclude = ["module", "content", "tests"]
 
 
 class ModuleSerializer(ModelSerializer):
-    sections = BriefModuleSectionSerializer(many=True)
+    topics = BriefTopicSerializer(many_dict=True)
 
     class Meta(Meta):
         model = Module
+        list_serializer_class = HashIdDictSerializer
 
 
 class UserSerializer(ModelSerializer):
     password = serializers.CharField(write_only=True)
     is_admin = serializers.BooleanField(source="is_superuser", default=False)
-    interests = SchemaField(list[str])
     messages = ChatMessageSerializer(read_only=True, many=True)
-    completed_sections = BriefModuleSectionSerializer(read_only=True, many=True)
-    completed_modules = ModuleSerializer(read_only=True, many=True)
-    available_sections = BriefModuleSectionSerializer(read_only=True, many=True)
-    available_modules = ModuleSerializer(read_only=True, many=True)
+    available_topics = SerializerMethodField()
+    available_modules = SerializerMethodField()
+
+    def get_available_topics(self, instance: User) -> list[str]:
+        return list(instance.available_topics.values_list("hashid", flat=True))
+
+    def get_available_modules(self, instance: User) -> list[str]:
+        return list(instance.available_modules.values_list("hashid", flat=True))
 
     def validate_is_admin(self, value: bool):
         if value and not self.maybe_user.is_superuser:
@@ -133,43 +157,64 @@ class UserSerializer(ModelSerializer):
             "first_name",
             "last_name",
             "is_admin",
+            "info",
             "email",
             "password",
             "messages",
-            "interests",
-            "completed_sections",
+            "completed_topics",
             "completed_modules",
-            "available_sections",
+            "available_topics",
             "available_modules",
         ]
 
 
 class AIUserInfo(ModelSerializer):
-    interests = SchemaField(list[str])
-    completed_sections = serializers.SerializerMethodField()
+    completed_topics = serializers.SerializerMethodField()
     completed_modules = serializers.SerializerMethodField()
+    available_topics = serializers.SerializerMethodField()
+    available_modules = serializers.SerializerMethodField()
 
-    def get_completed_sections(self, model: User) -> list[str]:
-        return list(model.completed_sections.values_list("name", flat=True))
+    def make_data(self, queryset):
+        return list(queryset.values_list("name", "hashid"))
+
+    def get_completed_topics(self, model: User) -> list[str]:
+        return self.make_data(model.completed_topics)
 
     def get_completed_modules(self, model: User) -> list[str]:
-        return list(model.completed_modules.values_list("name", flat=True))
+        return self.make_data(model.completed_modules)
+
+    def get_available_topics(self, model: User) -> list[str]:
+        return self.make_data(model.available_topics)
+
+    def get_available_modules(self, model: User) -> list[str]:
+        return self.make_data(model.available_modules)
 
     class Meta(Meta):
         model = User
         fields = [
+            "info",
             "first_name",
             "last_name",
-            "interests",
-            "completed_sections",
+            "completed_topics",
             "completed_modules",
+            "available_topics",
+            "available_modules",
         ]
 
 
-class SendMessageSerializer(Serializer):
-    text = serializers.CharField()
-    context = serializers.CharField()
+class SendMessageSerializer(ChatMessageSerializer):
+    context = serializers.CharField(write_only=True)
+
+    def create(self, validated_data):
+        validated_data.pop("context", None)
+        return super().create(validated_data)
+
+
+class ReceiveMessagesSerializer(Serializer):
+    messages = ChatMessageSerializer(many=True)
+    updated_info = serializers.BooleanField()
+    extra = serializers.JSONField()
 
 
 class CompleteSectionSerializer(Serializer):
-    hashid = HashidField(queryset=ModuleSection.objects.all())
+    hashid = HashidField(queryset=Topic.objects.all())

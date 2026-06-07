@@ -18,7 +18,7 @@ remigrate:
     just redb
 
 redb:
-    rm -f db.sqlite3
+    rm -f database/db.sqlite3
     just migrate
     just seed
     

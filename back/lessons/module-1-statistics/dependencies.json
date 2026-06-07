@@ -1,7 +1,9 @@
 {
-  "arithmetic-mean.md": [],
-  "median.md": [],
-  "mode.md": [],
-  "range.md": [],
-  "variance-sd.md": ["arithmetic-mean.md"]
+  "arithmetic-mean": [],
+  "median": [],
+  "mode": [],
+  "range": [],
+  "variance-sd": [
+    "arithmetic-mean"
+  ]
 }

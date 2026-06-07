@@ -10,3 +10,5 @@ Depois, basta rodar:
 ```
 docker compose up -d --build
 ```
+
+Finalmente, o front está disponível em `http://localhost:5173`, com o usuário e senha padrão `admin@email.com` e `admin`, respectivamente.

@@ -1,3 +1,4 @@
+import pprint
 import json
 from django.db.transaction import atomic
 from rest_framework.response import Response
@@ -15,14 +16,15 @@ from django.utils.text import slugify
 from api.serializers import (
     UserSerializer,
     ModelSerializer,
-    ModuleSectionSerializer,
+    TopicSerializer,
     ModuleSerializer,
     ChatMessageSerializer,
     SendMessageSerializer,
     AIUserInfo,
     CompleteSectionSerializer,
+    ReceiveMessagesSerializer,
 )
-from api.models import User, Model, Module, ChatMessage, ModuleSection
+from api.models import User, Model, Module, ChatMessage, Topic
 from api.router import ImplicitRouter
 from rest_framework import viewsets
 
@@ -75,9 +77,9 @@ class ModuleViewSet(ModelViewSet):
     serializer_class = ModuleSerializer
 
 
-@autourl(name="section")
-class ModuleSectionViewSet(ModelViewSet):
-    serializer_class = ModuleSectionSerializer
+@autourl(name="topic")
+class TopicViewSet(ModelViewSet):
+    serializer_class = TopicSerializer
 
 
 @autourl(implicit=True)
@@ -104,79 +106,115 @@ class UserViewSet(CreateModelMixin, RetrieveModelMixin, UpdateModelMixin, ViewSe
     )
     @action(methods=["post"], detail=True)
     @atomic
-    def complete_section(self, request: Request):
+    def complete_topic(self, request: Request):
         ser = CompleteSectionSerializer(data=request.data)
         ser.is_valid(raise_exception=True)
 
-        section: ModuleSection = ser.validated_data["hashid"]
-        self.user.completed_sections.add(section)
+        topic: Topic = ser.validated_data["hashid"]
+        self.user.completed_topics.add(topic)
 
         return Response(status=204)
 
     @extend_schema(
+        request=None,
+        responses={200: None},
+    )
+    @action(methods=["post"], detail=True)
+    @atomic
+    def clear_messages(self, request: Request):
+        self.user.messages.all().delete()
+        return Response(None, 200)
+
+    @action(methods=["post"], detail=True)
+    @atomic
+    def set_module(self, request: Request):
+        mod = Module.objects.get(hashid=request.data["hashid"])
+        self.user.completed_modules.set([mod, *mod.dependencies.all()])
+        return Response(None, 200)
+
+    def make_system_info(self) -> str:
+        mods = ModuleSerializer(instance=Module.objects.all(), many=True).data
+        pprint.pp(mods)
+        return json.dumps(mods)
+
+    @extend_schema(
         request=SendMessageSerializer(),
-        responses={200: ChatMessageSerializer(many=True)},
+        responses={200: ReceiveMessagesSerializer()},
     )
     @action(methods=["post"], detail=True)
     @atomic
     def send_message(self, request: Request):
+        print(request.data)
         ser = SendMessageSerializer(data=request.data)
         ser.is_valid(raise_exception=True)
+        ser.validated_data["user"] = self.user
+
         data = ser.validated_data
+        context = data.pop("context")
+        responses = [ser.data]
 
-        text = data["text"]
-        context = data["context"]
+        history = list(self.user.messages.all())
 
-        ser = ChatMessageSerializer(
-            ChatMessage.objects.create(
-                text=text,
-                sender=ChatMessage.Sender.USER,
-                user=self.user,
-            )
-        )
+        print(data, str(ChatMessage.Sender.USER))
+        # Only persist messages sent by the user
+        if data["sender"] == str(ChatMessage.Sender.USER):
+            history.append(ser.create(data))
+        else:
+            history.append(ChatMessage(**data))
+            responses.pop()
 
-        messages = ChatMessageSerializer(
-            many=True, instance=self.user.messages.all()
-        ).data
-
-        messages = [
-            {
-                "role": m["sender"],
-                "parts": [{"text": m["text"]}],
-            }
-            for m in messages
-        ]
-
-        print(messages)
         user_info = json.dumps(AIUserInfo(self.user).data)
-
         system_prompt = [
             """
                 You are a helpful personal teacher.
-                Your response should follow this schema:
+                Your response should follow this base schema and add fields if asked:
                {
-                   'sender': 'model',
-                   'text': <your response>,
+                   "text": <your response>,
                }""",
             f"User info: {user_info}",
+            f"Modules: {self.make_system_info()}",
+            """If you ever encounter useful information about the user's personal preferences in learning, good analogies etc. Add the field `updateUserInfo` containing a string of relevant user information. This information will always be included in the next prompts and is meant as memory for you.""",
         ]
-        if context:
-            system_prompt.append(f"""
-            Here's some context of what the user sees:
-            {context}
-            """)
 
-        new_message = AI_CLIENT.call_model(
-            messages,
-            config=Config(system_instruction=system_prompt),
-        )
-        print(new_message)
+        if context:
+            system_prompt.append(
+                f""" Here's some context of what the user sees/relevant to what you're doing: {context}"""
+            )
+
+        messages = [
+            {
+                "role": m.sender,
+                "parts": [{"text": m.text}],
+            }
+            for m in history
+        ]
+
+        if True:
+            response = {"sender": "model", "text": "sample", "updateUserInfo": "ola"}
+        else:
+            response = AI_CLIENT.call_model(
+                messages,
+                config=Config(system_instruction=system_prompt),
+            )
+
+        updated_info = False
+        if new_info := response.pop("updateUserInfo", None):
+            updated_info = True
+            self.user.info = new_info
+            self.user.save()
+
+        new_message = {
+            "text": response.pop("text"),
+            "sender": ChatMessage.Sender.MODEL,
+        }
 
         resp_ser = ChatMessageSerializer(data=new_message)
         resp_ser.is_valid(raise_exception=True)
+        resp_ser.validated_data["user"] = self.user
+        resp_ser.create(resp_ser.validated_data)
 
-        data = resp_ser.validated_data
-        data["user"] = self.user
-        resp_ser.create(data)
+        responses.append(resp_ser.data)
 
-        return Response([ser.data, resp_ser.data])
+        return Response(
+            {"messages": responses, "updated_info": updated_info, "extra": response}
+        )

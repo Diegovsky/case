@@ -1,16 +1,17 @@
 import {
 	Box,
 	Button,
+	CircularProgress,
 	Container,
 	Link,
 	TextField,
 	Typography,
 } from "@mui/material";
-import { useState } from "react";
-import { data, Form, redirect } from "react-router";
+import { useState, useTransition } from "react";
+import { data, Form, redirect, useNavigation } from "react-router";
 import { authLoginCreate, userCreate } from "~/client";
 import Session from "~/session";
-import { handleResponse } from "~/utils";
+import { handleResponse, Hook } from "~/utils";
 import type { Route } from "./+types/login";
 
 export async function action({ request }: Route.ActionArgs) {
@@ -32,13 +33,12 @@ export async function action({ request }: Route.ActionArgs) {
 					email: data.email,
 					password: data.password,
 				},
-				auth: () => null,
+				auth: () => null as any as string,
 			}),
 		);
 		session.setTokens(jwt);
 
-		// go to /onboarding if progress is undefined/null
-		const route = !jwt.user.interests ? "/onboarding" : "/";
+		const route = "/";
 		throw redirect(route, await session.commit());
 	}
 }
@@ -47,8 +47,12 @@ export async function loader({ request }: Route.LoaderArgs) {
 	return data({}, await ses.delete());
 }
 
-export default function Login({}: Route.ComponentProps) {
+export default function Login(_: Route.ComponentProps) {
 	const [isSignUp, setIsSignUp] = useState(false);
+	const email = new Hook(useState("admin@email.com"));
+	const password = new Hook(useState("admin"));
+	const nav = useNavigation();
+	const loading = nav.state !== "idle";
 
 	return (
 		<Container maxWidth="xs">
@@ -66,6 +70,11 @@ export default function Login({}: Route.ComponentProps) {
 				</Typography>
 				<Box
 					component={Form}
+					onSubmit={(e) => {
+						if (loading) {
+							e.preventDefault();
+						}
+					}}
 					method="POST"
 					sx={{
 						display: "flex",
@@ -91,7 +100,8 @@ export default function Login({}: Route.ComponentProps) {
 						</>
 					)}
 					<TextField
-						value="admin@email.com"
+						value={email.value}
+						onChange={email.onChange()}
 						name="email"
 						label="Email"
 						fullWidth
@@ -99,14 +109,21 @@ export default function Login({}: Route.ComponentProps) {
 						type="email"
 					/>
 					<TextField
-						value="admin"
+						value={password.value}
+						onChange={password.onChange()}
 						name="password"
 						label="Password"
 						fullWidth
 						required
 						type="password"
 					/>
-					<Button type="submit" variant="contained" fullWidth size="large">
+					<Button
+						type="submit"
+						variant="contained"
+						disabled={loading}
+						fullWidth
+						size="large"
+					>
 						{isSignUp ? "Sign Up" : "Sign In"}
 					</Button>
 				</Box>
@@ -120,6 +137,7 @@ export default function Login({}: Route.ComponentProps) {
 						? "Already have an account? Sign In"
 						: "Don't have an account? Sign Up"}
 				</Link>
+				{loading && <CircularProgress color="primary" />}
 			</Box>
 		</Container>
 	);

@@ -1,6 +1,12 @@
 {
-  "conditional-probability.md": ["simple-probability.md"],
-  "independent-events.md": ["simple-probability.md"],
-  "mutually-exclusive.md": ["simple-probability.md"],
-  "simple-probability.md": []
+  "conditional-probability": [
+    "simple-probability"
+  ],
+  "independent-events": [
+    "simple-probability"
+  ],
+  "mutually-exclusive": [
+    "simple-probability"
+  ],
+  "simple-probability": []
 }

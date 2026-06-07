@@ -1,4 +1,5 @@
 import { AppBar, Avatar, Box, Toolbar, Typography } from "@mui/material";
+import { Link } from "react-router";
 import { PROJECT_TITLE } from "~/consts";
 import { useApp } from "~/context";
 import { fadeVisibility, type Hook } from "~/utils";
@@ -18,7 +19,12 @@ export default function AppHeader({ open }: { open: Hook<boolean> }) {
 					alignItems: "center",
 				}}
 			>
-				<Typography variant="h6" sx={{ ...fadeOnClose }}>
+				<Typography
+					component={Link}
+					to="/"
+					variant="h6"
+					sx={{ textDecoration: "none", color: "inherit", ...fadeOnClose }}
+				>
 					{PROJECT_TITLE}
 				</Typography>
 				<Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>

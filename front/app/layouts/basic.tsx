@@ -1,23 +1,21 @@
 import { Box, Fab } from "@mui/material";
-import { useRef, useState } from "react";
-import { Outlet } from "react-router";
+import { useState } from "react";
+import { Outlet, useNavigate } from "react-router";
 import AppHeader from "~/components/AppHeader";
 import AppDrawer from "~/components/Drawer";
-import { handleResponse, Hook } from "~/utils";
 import type { Route } from "./+types/basic";
 import { MessageSquare } from "lucide-react";
 import Chat from "~/components/Chat";
-import { AppProvider } from "~/context";
-import { userMeRetrieve } from "~/client";
+import { Hook } from "~/utils";
+import { useApp } from "~/context";
 
-export const loader = async () => handleResponse(await userMeRetrieve());
-
-export default function BasicLayout({
-	loaderData: user,
-}: Route.ComponentProps) {
+export default function BasicLayout(_: Route.ComponentProps) {
 	const open = new Hook(useState(false));
+	const nav = useNavigate();
 
-	const [chatOpen, setChatOpen] = useState(false);
+	const { isReadOnly } = useApp();
+
+	const [chatOpen, setChatOpen] = useState(isReadOnly.value);
 
 	const body = (
 		<Box
@@ -51,33 +49,33 @@ export default function BasicLayout({
 			</Box>
 			{chatOpen && (
 				<Chat
+					onExtraInfo={async ({ updated_info: updatedInfo }) => {
+						console.log("extra info", updatedInfo, isReadOnly.value);
+						if (updatedInfo && isReadOnly.value) {
+							nav("/tests");
+						}
+					}}
 					sx={{
 						borderLeft: 1,
 					}}
-					messages={user.messages}
 				/>
 			)}
 		</Box>
 	);
-	const aiContext = useRef("");
 
 	return (
-		<AppProvider app={{ user, aiContext }}>
-			<Box
-				sx={{ display: "flex", flexDirection: "column", minHeight: "100svh" }}
-			>
-				<Box sx={{ display: "flex", flexGrow: 1 }}>
-					<AppDrawer open={open} />
+		<Box sx={{ display: "flex", flexGrow: 1 }}>
+			{
+				// <AppDrawer open={open} />
+			}
 
-					<Box
-						component="main"
-						sx={{ flexGrow: 1, display: "flex", flexDirection: "column" }}
-					>
-						<AppHeader open={open} />
-						{body}
-					</Box>
-				</Box>
+			<Box
+				component="main"
+				sx={{ flexGrow: 1, display: "flex", flexDirection: "column" }}
+			>
+				<AppHeader open={open} />
+				{body}
 			</Box>
-		</AppProvider>
+		</Box>
 	);
 }

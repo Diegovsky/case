@@ -1,47 +1,48 @@
-import { useEffect, useState } from "react";
 import {
 	Box,
-	Typography,
-	RadioGroup,
-	FormControlLabel,
-	Radio,
 	Button,
 	Card,
 	CardContent,
+	FormControlLabel,
+	Radio,
+	RadioGroup,
+	Typography,
 } from "@mui/material";
+import { useState } from "react";
+import type { TestList } from "~/client";
+import InnerMarkdown from "./InnerMarkdown";
 
-export interface Question {
-	question: string;
-	options: string[];
-}
+export type Test = TestList[0];
 
 export default function QuizCard({
-	question: { question, options },
+	question: { question, alternatives, context },
 	onSubmit,
 }: {
-	question: Question;
+	question: Test;
 	onSubmit?: (index: number) => void;
 }) {
-	const [selectedOption, setSelectedOption] = useState(0);
+	const [selectedOption, setSelectedOption] = useState(-1);
 	return (
-		<Card variant="outlined" sx={{ maxWidth: 600, mx: "auto", mt: 4 }}>
-			<CardContent sx={{ p: 4 }}>
-				<Typography variant="h6" gutterBottom sx={{ mb: 3 }}>
-					{question}
-				</Typography>
-				<Box sx={{ mb: 4 }}>
+		<Card variant="outlined" sx={{ mt: 4 }}>
+			<CardContent sx={{ p: 4, alignItems: "start", textAlign: "left" }}>
+				{context && <InnerMarkdown content={context} />}
+				<InnerMarkdown content={question} />
+				<Box sx={{ mb: 4, ml: 8 }}>
 					<RadioGroup
 						value={selectedOption}
 						onChange={(e) => setSelectedOption(parseInt(e.target.value))}
 					>
-						{options.map((option, index) => (
-							<FormControlLabel
-								key={index}
-								value={index}
-								control={<Radio />}
-								label={option}
-								sx={{ display: "block", mb: 1 }}
-							/>
+						{alternatives.map((opt, i) => (
+							<>
+								{opt.isCorrect && "yes"}
+								<FormControlLabel
+									key={opt.letter}
+									value={i}
+									control={<Radio />}
+									label={opt.file ? <image src={opt.file} /> : opt.text}
+									sx={{ display: "block" }}
+								/>
+							</>
 						))}
 					</RadioGroup>
 				</Box>
@@ -52,7 +53,6 @@ export default function QuizCard({
 						onClick={() => {
 							if (onSubmit) {
 								onSubmit(selectedOption);
-								setSelectedOption(0);
 							}
 						}}
 						size="large"

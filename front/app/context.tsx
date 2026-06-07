@@ -1,9 +1,10 @@
 import { createContext, type ReactNode, useContext, type Ref } from "react";
 import type { User } from "~/client/types.gen";
-import type { Hook } from "./utils";
+import type { Hook, SetState } from "./utils";
 
 export interface App {
 	user: User;
+	isReadOnly: Hook<boolean>;
 	aiContext: string | object;
 }
 
