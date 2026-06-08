@@ -15,6 +15,7 @@ services:
     volumes:
       - ./back:/app
       - /app/database
+      - /app/media
       - /app/.venv
       
     networks:

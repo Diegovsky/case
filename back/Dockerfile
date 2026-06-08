@@ -6,7 +6,7 @@ COPY pyproject.toml uv.lock ./
 RUN uv sync --frozen
 COPY . .
 
-RUN mkdir -p /app/database
+RUN mkdir -p /app/database /app/media
 
 RUN sh -c \
   'source .env && \
