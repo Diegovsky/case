@@ -6,10 +6,14 @@ COPY pyproject.toml uv.lock ./
 RUN uv sync --frozen
 COPY . .
 
+RUN mkdir -p /app/database
+
 RUN sh -c \
   'source .env && \
-  rm -f database/db.sqlite3 && \
-  uv run python manage.py migrate && \
+  uv run python manage.py migrate'
+
+RUN sh -c \
+  'source .env && \
   uv run python manage.py seed'
 
 EXPOSE 8000

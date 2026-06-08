@@ -13,10 +13,9 @@ services:
     env_file:
       - ./back/.env
     volumes:
-      - ./back:/app:ro
-      - /app/media
-      - /app/.venv
+      - ./back:/app
       - /app/database
+      - /app/.venv
       
     networks:
       - project_network

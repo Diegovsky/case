@@ -63,6 +63,7 @@ dependencies = [
     { name = "marko" },
     { name = "pytest" },
     { name = "pytest-django" },
+    { name = "tzdata" },
 ]
 
 [package.metadata]
@@ -83,6 +84,7 @@ requires-dist = [
     { name = "marko", specifier = ">=2.2.3" },
     { name = "pytest", specifier = ">=9.0.3" },
     { name = "pytest-django", specifier = ">=4.12.0" },
+    { name = "tzdata", specifier = ">=2026.2" },
 ]
 
 [[package]]
