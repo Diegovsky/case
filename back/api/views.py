@@ -189,13 +189,10 @@ class UserViewSet(CreateModelMixin, RetrieveModelMixin, UpdateModelMixin, ViewSe
             for m in history
         ]
 
-        if True:
-            response = {"sender": "model", "text": "sample", "updateUserInfo": "ola"}
-        else:
-            response = AI_CLIENT.call_model(
-                messages,
-                config=Config(system_instruction=system_prompt),
-            )
+        response = AI_CLIENT.call_model(
+            messages,
+            config=Config(system_instruction=system_prompt),
+        )
 
         updated_info = False
         if new_info := response.pop("updateUserInfo", None):
